@@ -30,3 +30,9 @@ Live scores website (Next.js + MySQL login). Data: **SportScore free API** (key 
 - `components/FilterTabs.tsx` - All / Live / Scheduled / Finished / Favorites
 - `components/MatchesList.tsx` - 50 matches par client-side status filter + favorites
 - `lib/sportscore.js` -> `fetchMatchesByDate()`; fetch `next: { revalidate: 60 }` ke sath
+
+## News + Admin (v0.7)
+- `/admin` -> sidebar: Dashboard, All news, Add news, Categories / Subnavbar
+- Category add karo (`/admin/categories` ya Add news form ke andar) -> news site ke subnavbar me foran aa jati hai
+- `/news` home, `/news/category/[slug]`, `/news/all` (sab news + sab categories ek page par)
+- `app/admin/layout.js` admin sidebar layout hai (pehle galat folder me tha)

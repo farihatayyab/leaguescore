@@ -1,25 +1,31 @@
 import Link from "next/link";
 import { timeAgo } from "@/lib/news";
 
+export { default as NewsSubNav } from "./NewsSubNav";
+
 export function NewsImg({ src, title }) {
   // eslint-disable-next-line @next/next/no-img-element
   return src ? <img src={src} alt={title} loading="lazy" /> : <div className="nw-ph">{(title || "?")[0]}</div>;
 }
 
-export function NewsSubNav({ cats, active = "" }) {
+// Category page ka upar wala bada article (image left, bada title right)
+export function HeroBlock({ title, item }) {
+  if (!item) return null;
   return (
-    <nav className="nw-sub" aria-label="News categories">
-      <Link href="/news" className={!active ? "on" : ""}>All</Link>
-      {cats.map((c) => (
-        <Link key={c.id} href={`/news/category/${c.slug}`} className={active === c.slug ? "on" : ""}>
-          {c.name}
-        </Link>
-      ))}
-    </nav>
+    <section className="nw-block">
+      <div className="nw-bh"><span>{title}</span></div>
+      <Link href={`/news/${item.slug}`} className="nw-hero nw-hero2">
+        <NewsImg src={item.image_url} title={item.title} />
+        <div>
+          <h2>{item.title}</h2>
+          <p className="nw-meta">{timeAgo(item.created_at)}</p>
+        </div>
+      </Link>
+    </section>
   );
 }
 
-// 1 bada article + neeche 3 cards (Flashscore style)
+// 1 bada article + neeche 3 cards (news home page ke sections)
 export function FeatureBlock({ title, href, more, items }) {
   if (!items?.length) return null;
   const [first, ...rest] = items;
@@ -55,8 +61,8 @@ export function FeatureBlock({ title, href, more, items }) {
   );
 }
 
-// "More News" list
-export function NewsList({ title, items }) {
+// List (image left, title, time) + optional "Show more"
+export function NewsList({ title, items, moreHref }) {
   if (!items?.length) return null;
   return (
     <section className="nw-block">
@@ -73,6 +79,11 @@ export function NewsList({ title, items }) {
           </div>
         </Link>
       ))}
+      {moreHref && (
+        <div className="nw-showmore">
+          <Link href={moreHref} scroll={false}>Show more ⌄</Link>
+        </div>
+      )}
     </section>
   );
 }

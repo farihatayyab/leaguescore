@@ -47,7 +47,7 @@ export default async function NewsPage({ searchParams }) {
           <div className="nw-main">
             <FeatureBlock title="Top News" items={h.top} />
             {first.map(block)}
-            <NewsList title="More News" items={h.more} />
+            <NewsList title="More News" items={h.more} moreHref="/news/all" />
             <FeatureBlock title="Editors’ Picks" items={h.editors} />
             {rest.map(block)}
           </div>

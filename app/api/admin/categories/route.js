@@ -16,8 +16,8 @@ export async function POST(req) {
   const [ex] = await pool.query("SELECT id FROM news_categories WHERE slug = ?", [slug]);
   if (ex.length) return NextResponse.json({ error: "This category already exists." }, { status: 409 });
   const [mx] = await pool.query("SELECT COALESCE(MAX(sort_order), 0) + 1 AS n FROM news_categories");
-  await pool.query("INSERT INTO news_categories (name, slug, sort_order) VALUES (?, ?, ?)", [n, slug, mx[0].n]);
-  return NextResponse.json({ ok: true });
+  const [ins] = await pool.query("INSERT INTO news_categories (name, slug, sort_order) VALUES (?, ?, ?)", [n, slug, mx[0].n]);
+  return NextResponse.json({ ok: true, category: { id: ins.insertId, name: n, slug } });
 }
 
 // { id, name } = rename   |   { order: [id, id, ...] } = naya order

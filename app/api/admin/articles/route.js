@@ -8,7 +8,7 @@ const deny = () => NextResponse.json({ error: "Admin only." }, { status: 403 });
 
 async function uniqueSlug(title) {
   let base = slugify(title).slice(0, 120) || "news";
-  if (base === "category") base = "category-news";
+  if (base === "category" || base === "all") base = `${base}-news`;
   let s = base;
   for (let i = 2; ; i++) {
     const [r] = await pool.query("SELECT 1 FROM news_articles WHERE slug = ?", [s]);
