@@ -3,6 +3,8 @@ import Ticker from "@/components/Ticker";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getMatches } from "@/lib/data";
+import { Suspense } from "react";
+import NavProgress from "@/components/NavProgress";
 import { HideOnAdmin, MainShell } from "@/components/SiteChrome";
 export const metadata = {
   title: { default: "LeagueScore – Live scores, fixtures & results", template: "%s | LeagueScore" },
@@ -22,6 +24,9 @@ export default async function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
+         <Suspense fallback={null}>
+    <NavProgress />
+  </Suspense>
         <HideOnAdmin>
     <Header />
     <Ticker initial={matches.filter((m) => m.live)} />

@@ -26,13 +26,31 @@ Live scores website (Next.js + MySQL login). Data: **SportScore free API** (key 
 
 ## Date + status filters (v0.6)
 - `app/[sport]/page.tsx` - server component, `?date=YYYY-MM-DD` se us din ke matches fetch karta hai
-- `components/DateTabs.tsx` - Yesterday / Today / Tomorrow + date picker (+-14 din)
+- `components/DateTabs.tsx` - -3..+3 din ke tabs + date picker (pichle 60 / agle 14 din)
 - `components/FilterTabs.tsx` - All / Live / Scheduled / Finished / Favorites
 - `components/MatchesList.tsx` - 50 matches par client-side status filter + favorites
-- `lib/sportscore.js` -> `fetchMatchesByDate()`; fetch `next: { revalidate: 60 }` ke sath
+- `lib/sportscore.js` -> `fetchMatchesByDate()`
 
 ## News + Admin (v0.7)
 - `/admin` -> sidebar: Dashboard, All news, Add news, Categories / Subnavbar
 - Category add karo (`/admin/categories` ya Add news form ke andar) -> news site ke subnavbar me foran aa jati hai
 - `/news` home, `/news/category/[slug]`, `/news/all` (sab news + sab categories ek page par)
 - `app/admin/layout.js` admin sidebar layout hai (pehle galat folder me tha)
+
+## SportScore Fixtures API (guide ke mutabiq)
+- `fetchMatchesByDate()` ab `/api/v1/fixtures/?sport=&date=&limit=200` use karta hai (pehle widget feed tha jo date ignore karta aur 50 par ruk jata tha).
+- Karachi (UTC+5) ka ek din UTC ke 2 din mein bantta hai, isliye `D-1` aur `D` dono fetch hote hain aur `Asia/Karachi` din ke matches rakhe jate hain.
+- Cache: aaj 60s, aane wale din 10 min, kal 5 min, usse purane din 6 ghante. Same sport/date ka response sab visitors ke liye reuse hota hai, browser seedha SportScore ko call nahi karta (`/api/live` server se guzarta hai).
+- Fixtures ka format docs mein verify nahi tha, isliye parser tolerant hai (array / `fixtures` / `matches` / `data`). Agar fixtures endpoint fail ho ya format samajh na aaye to khud purane widget feed par wapas aa jata hai (console mein warning aati hai).
+- Agar kisi din 200 se zyada fixtures hon to page par "list may be incomplete" note aata hai. Docs se pagination parameter confirm karke `.env` mein `SPORTSCORE_PAGE_PARAM` / `SPORTSCORE_PAGE_MODE` set karo.
+- Status mapping (live / scheduled / finished / other) ab 1H, 2H, HT, FT, AET, PEN, NS, pending, postponed waghera sambhalti hai.
+- `/api/tracker?sport=&slug=` live tracker (`/api/widget/tracker/`) ka server-side cached proxy hai. Abhi UI mein nahi lagaya, kyunke uska format docs mein nahi.
+- Pehli baar chalane par terminal mein check karo: `curl "https://sportscore.com/api/v1/fixtures/?sport=football&date=$(date +%F)&limit=3"`
+
+## Footer + info pages (v0.9)
+- `components/Footer.js` - 6 columns (4 sports, Top Competitions, Top Leagues), About/Quick links, social icons, back-to-top. "Powered by SportScore" link yahin hai, hatana mat.
+- Pages: `/about`, `/contact`, `/privacy`, `/terms`, `/cookies`, `/feedback` (`components/InfoPage.js` layout)
+- Contact aur Feedback forms `/api/contact` par jate hain aur MySQL table `contact_messages` mein save hote hain (khud ban jati hai). Spam ke liye honeypot + 5 messages/ghanta/IP.
+- Admin: `/admin/messages` - messages padho, Reply (mailto), read/unread, delete.
+- Footer ke naam/email/social links `lib/site.js` aur `.env` (`SITE_EMAIL`, `SOCIAL_*`) se aate hain.
+- Legal pages ka text general template hai; live karne se pehle apne hisaab se (aur zaroorat ho to kisi qanooni mahir se) check kar lo. Date `lib/site.js` mein `legalUpdated`.

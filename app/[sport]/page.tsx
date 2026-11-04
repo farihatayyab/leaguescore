@@ -31,10 +31,10 @@ export default async function SportPage({ params, searchParams }: Props) {
   let date = resolveDate(typeof sp.date === "string" ? sp.date : "");
 
   const label = SPORTS.find((x) => x.key === sport)!.label;
-  // Ek hi API list (60s cache); din ke hisaab se alag karte hain
-  let { matches, days } = await getMatchesByDate(sport, date);
+  // /api/v1/fixtures/ se us date ke matches (max 200 per request, server-side cache); fail ho to widget feed
+  let { matches, days, truncated } = await getMatchesByDate(sport, date);
 
-  // Date nahi di aur aaj ka koi match nahi: sab se qareeb wale din ka data dikhao
+  // (Widget fallback mode) Date nahi di aur aaj ka koi match nahi: sab se qareeb wale din ka data dikhao
   if (!sp.date && matches.length === 0 && days.length) {
     const near = [...days].sort((a, b) => Math.abs(+new Date(a.key) - +new Date(today)) - Math.abs(+new Date(b.key) - +new Date(today)))[0];
     date = near.key;
@@ -62,7 +62,12 @@ export default async function SportPage({ params, searchParams }: Props) {
 
       <div className="layout">
         <div className="panel">
-          <DateTabs sport={sport} date={date} today={today} days={days} q={q} comp={comp} />
+          <DateTabs sport={sport} date={date} today={today} count={matches.length} days={days} q={q} comp={comp} />
+          {truncated && (
+            <p className="active-filter">
+              This date has a very large number of fixtures; the list may be incomplete.
+            </p>
+          )}
           <MatchesList
             key={`${sport}-${date}-${q}-${comp}`}
             initial={matches}

@@ -8,7 +8,7 @@ import Crest from "./Crest";
 import type { Match, MatchState, StatusFilter } from "@/types/match";
 
 interface Props {
-  initial: Match[]; // server se aaye 50 matches (is date ke)
+  initial: Match[]; // server se aaye is date ke matches (fixtures: max 200)
   sport: string;
   date: string;
   isToday: boolean; // sirf aaj ke din live polling chalti hai
@@ -75,7 +75,7 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
     );
   }, [all, q, comp]);
 
-  // Status filter: client par, fetch kiye hue 50 matches par hi
+  // Status filter: client par, fetch kiye hue matches par hi
   const counts: Record<StatusFilter, number> = {
     all: matches.length,
     live: matches.filter((m) => m.state === "live").length,

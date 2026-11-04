@@ -17,6 +17,10 @@ const NAV = [
       { href: "/admin/categories", text: "Categories / Subnavbar", icon: "tag" },
     ],
   },
+  {
+    label: "Inbox",
+    items: [{ href: "/admin/messages", text: "Messages", icon: "mail" }],
+  },
 ];
 
 export default function AdminSidebar({ admin }) {

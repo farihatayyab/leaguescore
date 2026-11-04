@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
-import { shiftDay } from "@/lib/format";
+import { useRouter } from "next/navigation";
+import { MAX_FUTURE_DAYS, MAX_PAST_DAYS, shiftDay } from "@/lib/format";
 
 interface Props {
   sport: string;
   date: string; // abhi selected din
   today: string; // server ka "aaj"
-  days: { key: string; count: number }[]; // jin dino ka data maujood hai
+  count: number; // selected din ke matches
+  days?: { key: string; count: number }[]; // sirf widget fallback mein bharta hai
   q?: string;
   comp?: string;
 }
@@ -14,8 +16,11 @@ interface Props {
 const pretty = (key: string) =>
   new Date(`${key}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", timeZone: "UTC" });
 
-// SportScore API date nahi leti, isliye sirf wahi din dikhte hain jin ke matches asal mein maujood hain
-export default function DateTabs({ sport, date, today, days, q = "", comp = "" }: Props) {
+// Fixtures endpoint har date ke liye data deta hai: -3 se +3 din ke tabs, aur date picker se purani/aane wali date
+// (pichle MAX_PAST_DAYS aur agle MAX_FUTURE_DAYS din tak).
+export default function DateTabs({ sport, date, today, count, days = [], q = "", comp = "" }: Props) {
+  const router = useRouter();
+
   const href = (day: string) => {
     const p = new URLSearchParams();
     if (day !== today) p.set("date", day); // aaj ke liye saaf URL
@@ -34,24 +39,36 @@ export default function DateTabs({ sport, date, today, days, q = "", comp = "" }
       ? "Tomorrow"
       : pretty(key);
 
-  // Aaj hamesha, baqi wo din jin mein data hai, aur selected din
-  const keys = Array.from(new Set([today, date, ...days.map((d) => d.key)])).sort();
-  const countOf = (k: string) => days.find((d) => d.key === k)?.count ?? 0;
+  const quick = [-3, -2, -1, 0, 1, 2, 3].map((n) => shiftDay(today, n));
+  const keys = Array.from(new Set([...quick, date])).sort();
+  const countOf = (k: string) => (k === date ? count : days.find((d) => d.key === k)?.count);
 
   return (
     <div className="datebar" role="tablist" aria-label="Select date">
-      {keys.map((k) => (
-        <Link
-          key={k}
-          href={href(k)}
-          prefetch={false}
-          role="tab"
-          aria-selected={k === date}
-          className={k === date ? "dtab on" : "dtab"}
-        >
-          {label(k)} <span>{countOf(k)}</span>
-        </Link>
-      ))}
+      {keys.map((k) => {
+        const c = countOf(k);
+        return (
+          <Link
+            key={k}
+            href={href(k)}
+            prefetch={false}
+            role="tab"
+            aria-selected={k === date}
+            className={k === date ? "dtab on" : "dtab"}
+          >
+            {label(k)} {c !== undefined && <span>{c}</span>}
+          </Link>
+        );
+      })}
+      <input
+        type="date"
+        className="dpick"
+        aria-label="Pick a date"
+        value={date}
+        min={shiftDay(today, -MAX_PAST_DAYS)}
+        max={shiftDay(today, MAX_FUTURE_DAYS)}
+        onChange={(e) => e.target.value && router.push(href(e.target.value))}
+      />
     </div>
   );
 }
