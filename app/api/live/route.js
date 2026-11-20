@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { getMatches, getMatchesByDate } from "@/lib/data";
 import { resolveDate } from "@/lib/format";
 import { isSport } from "@/lib/sportscore";
+import { withApiGuard, apiOptions } from "@/lib/apiGuard";
 
-export async function GET(req) {
+export const OPTIONS = apiOptions;
+
+// Response: { matches, attribution: { brandName, url, required: true } }
+export const GET = withApiGuard(async (req) => {
   const p = new URL(req.url).searchParams;
   const sport = p.get("sport") || "football";
   if (!isSport(sport)) return NextResponse.json({ error: "Unknown sport" }, { status: 400 });
@@ -12,4 +16,4 @@ export async function GET(req) {
   let matches = date ? (await getMatchesByDate(sport, resolveDate(date))).matches : await getMatches(sport);
   if (p.get("live") === "1") matches = matches.filter((m) => m.live);
   return NextResponse.json({ matches });
-}
+});

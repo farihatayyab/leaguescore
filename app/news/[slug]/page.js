@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getArticle, bumpViews, getCategories, getMostRead, timeAgo } from "@/lib/news";
 import { NewsSubNav, MostRead } from "@/components/NewsBlocks";
+import { renderNewsBody } from "@/lib/htmlText";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function ArticlePage({ params }) {
   if (!a) notFound();
   await bumpViews(a.id);
   const [cats, mostRead] = await Promise.all([getCategories(), getMostRead(5)]);
-  const paras = (a.body || "").split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const bodyHtml = renderNewsBody(a.body); // sanitized: headings/boxes render hote hain, script/XSS nahi
 
   return (
     <>
@@ -35,9 +36,7 @@ export default async function ArticlePage({ params }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img className="cover" src={a.image_url} alt={a.title} />
           )}
-          {paras.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
+          <div className="nw-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </article>
         <MostRead items={mostRead} />
       </div>

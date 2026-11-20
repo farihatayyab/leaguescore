@@ -5,6 +5,8 @@ import { useLive } from "@/lib/useLive";
 import { featuredRank } from "@/lib/competitions";
 import FilterTabs from "./FilterTabs";
 import Crest from "./Crest";
+import Flag from "./Flag";
+import { getMatchCountryInfo, matchesQuery } from "@/lib/countries";
 import type { Match, MatchState, StatusFilter } from "@/types/match";
 
 interface Props {
@@ -20,6 +22,9 @@ interface Group {
   slug: string;
   name: string;
   logo: string;
+  label: string; // country ya region ("Brazil" / "Asia" / "")
+  countryCode: string;
+  countryFlag: string;
   items: Match[];
 }
 
@@ -29,6 +34,13 @@ const SECTIONS: [MatchState, string, string][] = [
   ["finished", "Finished", "sec-fin"],
   ["other", "Postponed / other", "sec-fin"],
 ];
+
+// poore group ka ek hi round ho to header mein dikhao ("Round 15")
+const roundOf = (g: Group) => {
+  const r = (g.items[0]?.round || "").trim();
+  if (!r || !g.items.every((m) => m.round === r)) return "";
+  return /^\d+$/.test(r) ? `Round ${r}` : r; // "8" -> "Round 8", "Round 8" jaisa hai waisa
+};
 
 const FAV_KEY = "leaguescore:favs";
 const favId = (m: Match) => `${m.sport}:${m.slug}`;
@@ -65,14 +77,8 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
       seen.add(k);
       return true;
     });
-    return unique.filter(
-      (m) =>
-        (!comp || m.compSlug === comp) &&
-        (!needle ||
-          m.home.toLowerCase().includes(needle) ||
-          m.away.toLowerCase().includes(needle) ||
-          m.competition.toLowerCase().includes(needle))
-    );
+    // team / competition / country / region (Japan, Algeria, Asia...) sab par search
+    return unique.filter((m) => (!comp || m.compSlug === comp) && (!needle || matchesQuery(m, needle)));
   }, [all, q, comp]);
 
   // Status filter: client par, fetch kiye hue matches par hi
@@ -94,7 +100,17 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
 
       const groups = Object.values(
         list.reduce<Record<string, Group>>((acc, m) => {
-          (acc[m.compSlug] ||= { slug: m.compSlug, name: m.competition, logo: m.compLogo, items: [] }).items.push(m);
+          const info = getMatchCountryInfo(m);
+          const key = `${m.compSlug}|${info.countryCode || info.label}`;
+          (acc[key] ||= {
+            slug: m.compSlug,
+            name: m.competition,
+            logo: m.compLogo,
+            label: info.label,
+            countryCode: info.countryCode,
+            countryFlag: info.countryFlag,
+            items: [],
+          }).items.push(m);
           return acc;
         }, {})
       ).sort(
@@ -145,10 +161,18 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
           </div>
 
           {s.groups.slice(0, shown).map((g) => (
-            <div key={g.slug}>
+            <div key={`${g.slug}|${g.countryCode || g.label}`}>
               <div className="lh">
-                <Crest src={g.logo} name={g.name} size={20} round />
-                <b>{g.name}</b>
+                {g.countryFlag ? (
+                  <Flag src={g.countryFlag} name={g.label} size={12} />
+                ) : (
+                  <Crest src={g.logo} name={g.name} size={20} round />
+                )}
+                <span className="lh-name">
+                  <b>{g.name}</b>
+                  {g.label && g.label.toLowerCase() !== g.name.toLowerCase() && <span className="lh-country"> · {g.label}</span>}
+                  {roundOf(g) && <span className="lh-country"> {roundOf(g)}</span>}
+                </span>
                 {featuredRank(g.name) !== 999 && <span className="fav-flag">Top</span>}
               </div>
 

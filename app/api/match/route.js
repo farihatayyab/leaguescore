@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { getMatch } from "@/lib/data";
 import { isSport } from "@/lib/sportscore";
+import { withApiGuard, apiOptions } from "@/lib/apiGuard";
 
-export async function GET(req) {
+export const OPTIONS = apiOptions;
+
+export const GET = withApiGuard(async (req) => {
   const p = new URL(req.url).searchParams;
   const sport = p.get("sport") || "football";
   const slug = p.get("slug") || "";
@@ -11,4 +14,4 @@ export async function GET(req) {
   }
   const match = await getMatch(sport, slug);
   return NextResponse.json({ match });
-}
+});

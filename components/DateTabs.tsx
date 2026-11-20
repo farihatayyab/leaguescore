@@ -13,8 +13,15 @@ interface Props {
   comp?: string;
 }
 
-const pretty = (key: string) =>
-  new Date(`${key}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", timeZone: "UTC" });
+// "Fri 13 Nov" (quick tabs) ya "Fri 13 Nov 2026" (year ke saath)
+const pretty = (key: string, withYear = false) =>
+  new Date(`${key}T00:00:00Z`).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    ...(withYear ? { year: "numeric" as const } : {}),
+    timeZone: "UTC",
+  });
 
 // Fixtures endpoint har date ke liye data deta hai: -3 se +3 din ke tabs, aur date picker se purani/aane wali date
 // (pichle MAX_PAST_DAYS aur agle MAX_FUTURE_DAYS din tak).
@@ -30,6 +37,8 @@ export default function DateTabs({ sport, date, today, count, days = [], q = "",
     return `/${sport}${qs ? `?${qs}` : ""}`;
   };
 
+  const quick = [-3, -2, -1, 0, 1, 2, 3].map((n) => shiftDay(today, n));
+
   const label = (key: string) =>
     key === today
       ? "Today"
@@ -37,9 +46,9 @@ export default function DateTabs({ sport, date, today, count, days = [], q = "",
       ? "Yesterday"
       : key === shiftDay(today, 1)
       ? "Tomorrow"
-      : pretty(key);
+      : // calendar se chuni hui date (quick tabs ke bahar) par year bhi dikhao
+        pretty(key, !quick.includes(key));
 
-  const quick = [-3, -2, -1, 0, 1, 2, 3].map((n) => shiftDay(today, n));
   const keys = Array.from(new Set([...quick, date])).sort();
   const countOf = (k: string) => (k === date ? count : days.find((d) => d.key === k)?.count);
 
@@ -56,7 +65,8 @@ export default function DateTabs({ sport, date, today, count, days = [], q = "",
             aria-selected={k === date}
             className={k === date ? "dtab on" : "dtab"}
           >
-            {label(k)} {c !== undefined && <span>{c}</span>}
+            {label(k)}
+            {c !== undefined && <span>{c}</span>}
           </Link>
         );
       })}

@@ -54,3 +54,23 @@ Live scores website (Next.js + MySQL login). Data: **SportScore free API** (key 
 - Admin: `/admin/messages` - messages padho, Reply (mailto), read/unread, delete.
 - Footer ke naam/email/social links `lib/site.js` aur `.env` (`SITE_EMAIL`, `SOCIAL_*`) se aate hain.
 - Legal pages ka text general template hai; live karne se pehle apne hisaab se (aur zaroorat ho to kisi qanooni mahir se) check kar lo. Date `lib/site.js` mein `legalUpdated`.
+
+## API attribution + Embed widget (v1.0)
+- Har `/api/live`, `/api/match`, `/api/tracker` response mein `attribution: { brandName, url, required: true }` aata hai (errors mein bhi). Code: `lib/attribution.js`, wrapper `lib/apiGuard.js` (`withApiGuard`).
+- Embed: `public/embed.js`
+  ```html
+  <div data-leaguescore-widget data-sport="football" data-live="1" data-api-key="ls_live_..."></div>
+  <script src="https://YOUR-SITE/embed.js" async></script>
+  ```
+  Widget closed Shadow DOM mein "Powered by LeagueScore" badge render karta hai. Data fetch/render se pehle aur har 1.5s (+ DOM change par) check hota hai ke badge DOM mein hai, `display/visibility/opacity/clip-path` theek hain, size/position theek hai aur link/text badla nahi. Fail hone par data hat jata hai, "attribution requirement" message aata hai aur `/api/embed/violation` ko report jati hai. Badge wapas theek ho to widget khud recover ho jata hai.
+- Key banana: `node --env-file=.env scripts/create-api-key.mjs "Owner" owner@email.com "example.com,*.example.org"` (raw key sirf ek baar dikhti hai, DB mein hash save hota hai).
+- Logging: `api_request_logs` (key prefix, endpoint, `Origin`, `Referer`, caller_host, IP, user-agent, flags, blocked), `attribution_violations`. Tables khud ban jati hain (ya `schema.sql`).
+- `API_KEY_MODE=log` (default): sirf log. `API_KEY_MODE=enforce`: third-party calls ko valid key + allowed domain chahiye (apni site ke frontend ki calls exempt). Pehle `log` mein chalao, logs dekho, phir `enforce` karo.
+- Useful queries:
+  ```sql
+  SELECT caller_host, key_prefix, COUNT(*) n FROM api_request_logs WHERE flags <> '' GROUP BY 1,2 ORDER BY n DESC;
+  SELECT caller_host, reason, COUNT(*) n, MAX(created_at) last FROM attribution_violations GROUP BY 1,2 ORDER BY n DESC;
+  UPDATE api_keys SET status='suspended' WHERE key_prefix='ls_live_ab12';
+  ```
+- Limitation: client-side check sirf casual hide/delete rokta hai; script ki apni copy edit karne wale ko nahi. Asli control server-side hai (key suspend/revoke, domain allow-list, logs).
+- Upstream: SportScore data ki terms ke mutabiq widget mein "Data by SportScore" link bhi hai; third-party ko data dene se pehle unki terms check karo.

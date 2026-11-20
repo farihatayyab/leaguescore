@@ -66,7 +66,7 @@ function Pitch({ m, rows }) {
     <section className="pitch-card">
       <div className="pitch-head">
         <Crest src={m.compLogo} name={m.competition} size={20} round />
-        <b>{m.competition}</b>
+        <b>{m.competition}{m.country && m.country !== m.competition ? <span className="muted"> · {m.country}</span> : null}</b>
         <span>{m.day} | {m.time}</span>
       </div>
 

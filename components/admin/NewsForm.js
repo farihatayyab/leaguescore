@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "./Icon";
 import { api } from "./api";
 import { useToast } from "./Toast";
+import { renderNewsBody } from "@/lib/htmlText";
 
 export default function NewsForm({ cats: initialCats, article = null, defaultCat = "" }) {
   const [cats, setCats] = useState(initialCats);
@@ -27,6 +28,59 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
     published: article ? !!article.published : true,
   });
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
+
+  // ---- News text editor: toolbar + live preview ----
+  const bodyRef = useRef(null);
+  const previewHtml = useMemo(() => renderNewsBody(f.body), [f.body]);
+  const wordCount = useMemo(() => {
+    const t = f.body.replace(/<[^>]*>/g, " ").trim();
+    return t ? t.split(/\s+/).length : 0;
+  }, [f.body]);
+
+  // Selected text ko tags ke andar wrap karta hai (undo/Ctrl+Z bhi chalta hai)
+  function wrapSel(open, close, { block = false, placeholder = "text" } = {}) {
+    const ta = bodyRef.current;
+    if (!ta) return;
+    const { selectionStart: s, selectionEnd: e, value } = ta;
+    const sel = value.slice(s, e) || placeholder;
+    const pre = block && s > 0 && value[s - 1] !== "\n" ? "\n\n" : "";
+    const post = block && value[e] !== "\n" ? "\n\n" : "";
+    const rep = pre + open + sel + close + post;
+    const a = pre.length + open.length;
+    ta.focus();
+    ta.setSelectionRange(s, e);
+    let ok = false;
+    try { ok = document.execCommand("insertText", false, rep); } catch {}
+    if (!ok) set("body", value.slice(0, s) + rep + value.slice(e));
+    requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(s + a, s + a + sel.length); });
+  }
+  const tools = {
+    h1: () => wrapSel("<h1>", "</h1>", { block: true, placeholder: "Heading" }),
+    h2: () => wrapSel("<h2>", "</h2>", { block: true, placeholder: "Heading" }),
+    h3: () => wrapSel("<h3>", "</h3>", { block: true, placeholder: "Heading" }),
+    box: () => wrapSel('<div class="news-box">', "</div>", { block: true, placeholder: "Box text" }),
+    b: () => wrapSel("<strong>", "</strong>"),
+    i: () => wrapSel("<em>", "</em>"),
+    link: () => {
+      const url = window.prompt("Link URL (https://…)");
+      if (url) wrapSel(`<a href="${url.replace(/"/g, "&quot;")}">`, "</a>", { placeholder: "link text" });
+    },
+  };
+  function onBodyKey(e) {
+    const mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    const k = e.key.toLowerCase();
+    let fn = null;
+    if (e.altKey) {
+      if (e.code === "Digit1") fn = tools.h1;
+      else if (e.code === "Digit2") fn = tools.h2;
+      else if (e.code === "Digit3") fn = tools.h3;
+      else if (e.code === "KeyB") fn = tools.box;
+    } else if (k === "b") fn = tools.b;
+    else if (k === "i") fn = tools.i;
+    else if (k === "k") fn = tools.link;
+    if (fn) { e.preventDefault(); fn(); }
+  }
 
   async function save(e) {
     e.preventDefault();
@@ -122,10 +176,37 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
             </div>
             <div className="adm-field">
               <label htmlFor="b">News text</label>
-              <textarea id="b" className="adm-in adm-body" value={f.body}
-                placeholder="Poori news yahan likho. Paragraph ke beech me ek khali line chhodo."
+              <div className="adm-tb" role="toolbar" aria-label="Text formatting">
+                <button type="button" onClick={tools.h1} title="Heading 1 (Ctrl+Alt+1)">H1</button>
+                <button type="button" onClick={tools.h2} title="Heading 2 (Ctrl+Alt+2)">H2</button>
+                <button type="button" onClick={tools.h3} title="Heading 3 (Ctrl+Alt+3)">H3</button>
+                <span className="adm-tb-sep" />
+                <button type="button" onClick={tools.b} title="Bold (Ctrl+B)"><b>B</b></button>
+                <button type="button" onClick={tools.i} title="Italic (Ctrl+I)"><i>I</i></button>
+                <button type="button" onClick={tools.link} title="Link (Ctrl+K)">Link</button>
+                <span className="adm-tb-sep" />
+                <button type="button" onClick={tools.box} title="Info box (Ctrl+Alt+B)">▣ Box</button>
+              </div>
+              <textarea id="b" ref={bodyRef} className="adm-in adm-body" value={f.body}
+                placeholder={"Poori news yahan likho. Paragraph ke beech me ek khali line chhodo.\nHTML bhi chalta hai: <h2>Heading</h2>, <div class=\"news-box\">Box</div>"}
+                onKeyDown={onBodyKey}
                 onChange={(e) => set("body", e.target.value)} />
-              <small>{f.body.trim() ? f.body.trim().split(/\s+/).length : 0} words</small>
+              <small>{wordCount} words</small>
+            </div>
+          </section>
+
+          <section className="adm-panel adm-panel-b adm-fields">
+            <h3>Live preview <em className="muted" style={{ fontWeight: 400 }}>— site par bilkul aisi dikhegi</em></h3>
+            <div className="nw-block nw-art adm-prev">
+              {f.title.trim() && <h1>{f.title}</h1>}
+              {f.summary.trim() && <p className="lead">{f.summary}</p>}
+              {f.image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="cover" src={f.image_url} alt="" />
+              )}
+              {previewHtml
+                ? <div className="nw-body" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                : <p className="muted">Preview yahan dikhega…</p>}
             </div>
           </section>
         </div>

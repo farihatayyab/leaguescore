@@ -81,7 +81,7 @@ export function NewsList({ title, items, moreHref }) {
       ))}
       {moreHref && (
         <div className="nw-showmore">
-          <Link href={moreHref} scroll={false}>Show more ⌄</Link>
+          <Link href={moreHref} scroll={false}>Show more</Link>
         </div>
       )}
     </section>

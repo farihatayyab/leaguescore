@@ -29,7 +29,7 @@ export default function Header() {
           </svg>
           <input
             name="q"
-            placeholder={isNews ? "Search news" : "Search teams or competitions"}
+            placeholder={isNews ? "Search news" : "Search matches, competitions, countries, teams..."}
             aria-label="Search"
             maxLength={60}
           />
