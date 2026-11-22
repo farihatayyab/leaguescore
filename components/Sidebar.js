@@ -6,6 +6,7 @@ import { TOP_COMPETITIONS, TOP_LEAGUES, TOP_PLAYERS } from "@/lib/sidebarData";
 import Crest from "./Crest";
 import WinPoll from "./WinPoll";
 import { SportScoreBadge } from "./Footer";
+import { getT } from "@/lib/i18n-server";
 
 // list ke har item ko aaj ke matches se jod deta hai (asli slug + logo mil jata hai)
 function resolve(list, matches) {
@@ -20,7 +21,7 @@ function resolve(list, matches) {
   });
 }
 
-function CompCard({ title, items, sport }) {
+function CompCard({ title, items, sport, t }) {
   return (
     <div className="side-card">
       <h3>{title}</h3>
@@ -28,7 +29,7 @@ function CompCard({ title, items, sport }) {
         <Link className="side-item" key={c.slug} href={`/${sport}/competition/${c.slug}`}>
           <Crest src={c.logo} name={c.label} size={22} round />
           <span className="si-name">{c.label}</span>
-          {c.live > 0 && <em className="si-live">{c.live} live</em>}
+          {c.live > 0 && <em className="si-live">{t("side.live", { n: c.live })}</em>}
         </Link>
       ))}
     </div>
@@ -36,6 +37,7 @@ function CompCard({ title, items, sport }) {
 }
 
 export default async function Sidebar({ matches, sport, comp = "" }) {
+  const { t, intl } = await getT();
   const live = matches.filter((m) => m.live);
   const upcoming = matches.filter((m) => m.state === "scheduled").sort((a, b) => a.iso.localeCompare(b.iso));
   const pick =
@@ -43,7 +45,7 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
     upcoming[0] ||
     matches[0];
 
-  const dateLabel = new Date().toLocaleDateString("en-GB", {
+  const dateLabel = new Date().toLocaleDateString(intl, {
     weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Karachi",
   });
 
@@ -77,7 +79,7 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
     <aside className="side">
       {pick && (
         <div className="live-now">
-          <div className="ln-top">{pick.live ? <><i /> LIVE NOW</> : "FEATURED MATCH"}</div>
+          <div className="ln-top">{pick.live ? <><i /> {t("side.liveNow")}</> : t("side.featured")}</div>
           <p className="ln-league">{pick.competition}</p>
           <div className="ln-teams">
             <div>
@@ -85,15 +87,15 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
               <b>{pick.home}</b>
             </div>
             <div className="ln-score">
-              {pick.state === "scheduled" ? "vs" : `${pick.hs ?? 0} - ${pick.as ?? 0}`}
-              <small>{pick.live ? "In play" : pick.time}</small>
+              {pick.state === "scheduled" ? t("vs") : `${pick.hs ?? 0} - ${pick.as ?? 0}`}
+              <small>{pick.live ? t("side.inPlay") : pick.time}</small>
             </div>
             <div>
               <Crest src={pick.awayLogo} name={pick.away} size={44} />
               <b>{pick.away}</b>
             </div>
           </div>
-          <Link href={`/${pick.sport}/match/${pick.slug}`} className="ln-btn">Match details →</Link>
+          <Link href={`/${pick.sport}/match/${pick.slug}`} className="ln-btn">{t("side.details")}</Link>
         </div>
       )}
 
@@ -101,16 +103,16 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
 
       <div className="date-card">
         <h3>{dateLabel}</h3>
-        <span className="muted">{matches.length} matches · </span>
-        <b className="red">{live.length} live</b>
+        <span className="muted">{t("side.matches", { n: matches.length })}</span>
+        <b className="red">{t("side.live", { n: live.length })}</b>
       </div>
 
-      <CompCard title="Top Competitions" items={topComps} sport={sport} />
-      <CompCard title="Top Leagues" items={topLeagues} sport={sport} />
+      <CompCard title={t("foot.topComps")} items={topComps} sport={sport} t={t} />
+      <CompCard title={t("foot.topLeagues")} items={topLeagues} sport={sport} t={t} />
 
       {players.length > 0 && (
         <div className="side-card">
-          <h3>Top Players</h3>
+          <h3>{t("side.topPlayers")}</h3>
           {players.map((p) => (
             <Link className="side-item" key={p.slug} href={`/${sport}/player/${p.slug}`}>
               <Crest src={p.logo} name={p.name} size={24} round />
@@ -122,7 +124,7 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
 
       {scorers.length > 0 && (
         <div className="side-card">
-          <h3>Top scorers · {topLeagues[0].label}</h3>
+          <h3>{t("side.topScorers", { league: topLeagues[0].label })}</h3>
           {scorers.map((r, i) => (
             <Link className="side-item" key={i} href={`/${sport}/player/${slugify(r.name || "")}`}>
               <span className="si-rank">{i + 1}</span>
@@ -136,12 +138,12 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
 
       {comps.length > 0 && (
         <div className="side-card">
-          <h3>Competitions today</h3>
+          <h3>{t("side.compsToday")}</h3>
           {comps.map((c) => (
             <Link className={c.slug === comp ? "side-item on" : "side-item"} key={c.slug} href={`/${sport}?comp=${c.slug}`}>
               <Crest src={c.logo} name={c.name} size={20} round />
               <span className="si-name">{c.name}</span>
-              {c.live > 0 && <em className="si-live">{c.live} live</em>}
+              {c.live > 0 && <em className="si-live">{t("side.live", { n: c.live })}</em>}
               <span className="si-n">{c.n}</span>
             </Link>
           ))}
@@ -149,8 +151,8 @@ export default async function Sidebar({ matches, sport, comp = "" }) {
       )}
 
       <div className="side-card attr">
-        <h3>Data provider</h3>
-        <p className="muted">Live scores and match data are provided by SportScore's free API.</p>
+        <h3>{t("side.provider")}</h3>
+        <p className="muted">{t("side.providerText")}</p>
         <SportScoreBadge />
       </div>
     </aside>

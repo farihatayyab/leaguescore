@@ -38,7 +38,7 @@ export default function NewsTable({ articles, cats }) {
   const reset = (fn) => (e) => { fn(e.target.value); setPage(0); };
 
   async function remove(a) {
-    if (!confirm(`Delete "${a.title}"?\nIs ko wapis nahi la sakte.`)) return;
+    if (!confirm(`Delete "${a.title}"?\nThis cannot be undone.`)) return;
     setBusy(a.id);
     try {
       await api(`/api/admin/articles?id=${a.id}`, "DELETE");
@@ -120,7 +120,7 @@ export default function NewsTable({ articles, cats }) {
               ))}
             </tbody>
           </table>
-          {!rows.length && <p className="adm-empty">Koi news nahi mili.</p>}
+          {!rows.length && <p className="adm-empty">No news found.</p>}
         </div>
 
         {list.length > PER && (

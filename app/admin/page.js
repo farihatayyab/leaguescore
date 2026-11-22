@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { tvSummary } from "@/lib/tvguide";
+import TvDashboard from "@/components/admin/TvDashboard";
 import { adminArticles, adminStats, getCategories, timeAgo } from "@/lib/news";
 import Icon from "@/components/admin/Icon";
 
@@ -6,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard" };
 
 export default async function Dashboard() {
-  const [stats, articles, cats] = await Promise.all([adminStats(), adminArticles(), getCategories()]);
+  const [stats, articles, cats, tv] = await Promise.all([adminStats(), adminArticles(), getCategories(), tvSummary().catch(() => null)]);
   const recent = articles.slice(0, 6);
   const top = [...articles].sort((a, b) => b.views - a.views).slice(0, 5);
   const breakdown = cats.map((c) => ({ ...c, n: articles.filter((a) => a.category_id === c.id).length }));
@@ -24,9 +26,12 @@ export default async function Dashboard() {
       <div className="adm-head">
         <div>
           <h1>Dashboard</h1>
-          <p>Aapki news ka overview ek nazar me.</p>
+          <p>An overview of your news and TV Guide at a glance.</p>
         </div>
-        <Link href="/admin/news/new" className="adm-btn"><Icon name="plus" size={16} /> Add news</Link>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link href="/admin/tv-guide" className="adm-btn ghost"><Icon name="tv" size={16} /> Add EPG link</Link>
+          <Link href="/admin/news/new" className="adm-btn"><Icon name="plus" size={16} /> Add news</Link>
+        </div>
       </div>
 
       <div className="adm-stats">
@@ -37,6 +42,8 @@ export default async function Dashboard() {
           </div>
         ))}
       </div>
+
+      {tv && <TvDashboard tv={tv} />}
 
       <div className="adm-grid2">
         <section className="adm-panel">
@@ -53,7 +60,7 @@ export default async function Dashboard() {
               <span className={`adm-badge ${a.published ? "ok" : "draft"}`}>{a.published ? "Published" : "Draft"}</span>
             </Link>
           ))}
-          {!recent.length && <p className="adm-empty">Abhi koi news nahi hai. Pehli news add karo.</p>}
+          {!recent.length && <p className="adm-empty">No news yet. Add your first article.</p>}
         </section>
 
         <div style={{ display: "grid", gap: 18 }}>

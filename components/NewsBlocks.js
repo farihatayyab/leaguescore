@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { timeAgo } from "@/lib/news";
+import { getT } from "@/lib/i18n-server";
 
 export { default as NewsSubNav } from "./NewsSubNav";
 
@@ -62,7 +63,8 @@ export function FeatureBlock({ title, href, more, items }) {
 }
 
 // List (image left, title, time) + optional "Show more"
-export function NewsList({ title, items, moreHref }) {
+export async function NewsList({ title, items, moreHref }) {
+  const { t } = await getT();
   if (!items?.length) return null;
   return (
     <section className="nw-block">
@@ -81,18 +83,19 @@ export function NewsList({ title, items, moreHref }) {
       ))}
       {moreHref && (
         <div className="nw-showmore">
-          <Link href={moreHref} scroll={false}>Show more</Link>
+          <Link href={moreHref} scroll={false}>{t("n.showMore")}</Link>
         </div>
       )}
     </section>
   );
 }
 
-export function MostRead({ items }) {
+export async function MostRead({ items }) {
+  const { t } = await getT();
   if (!items?.length) return null;
   return (
     <aside className="nw-block">
-      <div className="nw-bh"><span>Most read on LeagueScore News</span></div>
+      <div className="nw-bh"><span>{t("n.mostRead")}</span></div>
       {items.map((a) => (
         <Link key={a.id} href={`/news/${a.slug}`} className="nw-mr">
           <NewsImg src={a.image_url} title={a.title} />

@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useT } from "./LanguageProvider";
 
 export default function ConnectButton() {
+  const t = useT();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState("");
@@ -36,7 +38,7 @@ async function submit(e) {
     const data = await res.json();
     if (!res.ok) return setError(data.error);
 
-    setSuccess(tab === "login" ? "Logged in successfully!" : "Account created successfully!");
+    setSuccess(tab === "login" ? t("connect.okLogin") : t("connect.okSignup"));
     setTimeout(() => {
       setUser(data.user);
       setOpen(false);
@@ -44,7 +46,7 @@ async function submit(e) {
       setForm({ name: "", email: "", password: "", newsletter: true });
     }, 1500);
   } catch {
-    setError("Could not reach the server. Please try again.");
+    setError(t("err.server"));
   } finally {
     setLoading(false);
   }
@@ -57,43 +59,43 @@ async function submit(e) {
 
   if (user) {
     return (
-      <button className="btn-connect" onClick={logout} title="Log out">
-        {user.name.split(" ")[0]} · Log out
+      <button className="btn-connect" onClick={logout} title={t("connect.logout")}>
+        {user.name.split(" ")[0]} · {t("connect.logout")}
       </button>
     );
   }
 
   return (
     <>
-      <button className="btn-connect" onClick={() => setOpen(true)}>Connect</button>
+      <button className="btn-connect" onClick={() => setOpen(true)}>{t("connect")}</button>
 
       {open && (
         <div className="overlay" onClick={() => setOpen(false)}>
           <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-x" aria-label="Close" onClick={() => setOpen(false)}>✕</button>
+            <button className="modal-x" aria-label={t("close")} onClick={() => setOpen(false)}>✕</button>
             <div className="modal-logo">League<b>Score</b></div>
-            <p className="modal-sub">One free account for scores, favorites and alerts.</p>
+            <p className="modal-sub">{t("connect.sub")}</p>
 
             <div className="seg">
-              <button type="button" className={tab === "login" ? "on" : ""} onClick={() => switchTab("login")}>Log in</button>
-              <button type="button" className={tab === "signup" ? "on" : ""} onClick={() => switchTab("signup")}>Sign up</button>
+              <button type="button" className={tab === "login" ? "on" : ""} onClick={() => switchTab("login")}>{t("connect.login")}</button>
+              <button type="button" className={tab === "signup" ? "on" : ""} onClick={() => switchTab("signup")}>{t("connect.signup")}</button>
             </div>
 
             <form onSubmit={submit}>
               {tab === "signup" && (
-                <label>Name
-                  <input value={form.name} onChange={set("name")} placeholder="Your name" required />
+                <label>{t("connect.name")}
+                  <input value={form.name} onChange={set("name")} placeholder={t("connect.namePh")} required />
                 </label>
               )}
-              <label>Email
+              <label>{t("connect.email")}
                 <input type="email" value={form.email} onChange={set("email")} placeholder="you@email.com" required />
               </label>
-              <label>Password
+              <label>{t("connect.password")}
                 <input
                   type="password"
                   value={form.password}
                   onChange={set("password")}
-                  placeholder={tab === "signup" ? "At least 6 characters" : "Your password"}
+                  placeholder={tab === "signup" ? t("connect.pwNew") : t("connect.pwOld")}
                   minLength={6}
                   required
                 />
@@ -102,7 +104,7 @@ async function submit(e) {
               {tab === "signup" && (
                 <label className="check">
                   <input type="checkbox" checked={form.newsletter} onChange={set("newsletter")} />
-                  Keep me posted with news and updates
+                  {t("connect.newsletter")}
                 </label>
               )}
 
@@ -111,14 +113,14 @@ async function submit(e) {
               {success && <p className="form-success">{success}</p>}
 
            <button className="btn-grad" disabled={loading || !!success}>
-                {loading ? "Please wait..." : tab === "login" ? "Log in" : "Create account"}
+                {loading ? t("connect.wait") : tab === "login" ? t("connect.login") : t("connect.create")}
               </button>
             </form>
 
             <p className="modal-foot">
-              {tab === "login" ? "New here? " : "Already have an account? "}
+              {tab === "login" ? t("connect.newHere") : t("connect.haveAcc")}{" "}
               <a href="#" onClick={(e) => { e.preventDefault(); switchTab(tab === "login" ? "signup" : "login"); }}>
-                {tab === "login" ? "Create a free account" : "Log in"}
+                {tab === "login" ? t("connect.createFree") : t("connect.login")}
               </a>
             </p>
           </div>

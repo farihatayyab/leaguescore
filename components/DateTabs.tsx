@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MAX_FUTURE_DAYS, MAX_PAST_DAYS, shiftDay } from "@/lib/format";
+import { useI18n } from "./LanguageProvider";
 
 interface Props {
   sport: string;
@@ -14,8 +15,8 @@ interface Props {
 }
 
 // "Fri 13 Nov" (quick tabs) ya "Fri 13 Nov 2026" (year ke saath)
-const pretty = (key: string, withYear = false) =>
-  new Date(`${key}T00:00:00Z`).toLocaleDateString("en-GB", {
+const pretty = (key: string, withYear = false, intl = "en-GB") =>
+  new Date(`${key}T00:00:00Z`).toLocaleDateString(intl, {
     weekday: "short",
     day: "2-digit",
     month: "short",
@@ -27,6 +28,7 @@ const pretty = (key: string, withYear = false) =>
 // (pichle MAX_PAST_DAYS aur agle MAX_FUTURE_DAYS din tak).
 export default function DateTabs({ sport, date, today, count, days = [], q = "", comp = "" }: Props) {
   const router = useRouter();
+  const { t, intl } = useI18n();
 
   const href = (day: string) => {
     const p = new URLSearchParams();
@@ -41,19 +43,19 @@ export default function DateTabs({ sport, date, today, count, days = [], q = "",
 
   const label = (key: string) =>
     key === today
-      ? "Today"
+      ? t("date.today")
       : key === shiftDay(today, -1)
-      ? "Yesterday"
+      ? t("date.yesterday")
       : key === shiftDay(today, 1)
-      ? "Tomorrow"
+      ? t("date.tomorrow")
       : // calendar se chuni hui date (quick tabs ke bahar) par year bhi dikhao
-        pretty(key, !quick.includes(key));
+        pretty(key, !quick.includes(key), intl);
 
   const keys = Array.from(new Set([...quick, date])).sort();
   const countOf = (k: string) => (k === date ? count : days.find((d) => d.key === k)?.count);
 
   return (
-    <div className="datebar" role="tablist" aria-label="Select date">
+    <div className="datebar" role="tablist" aria-label={t("date.select")}>
       {keys.map((k) => {
         const c = countOf(k);
         return (
@@ -73,7 +75,7 @@ export default function DateTabs({ sport, date, today, count, days = [], q = "",
       <input
         type="date"
         className="dpick"
-        aria-label="Pick a date"
+        aria-label={t("date.pick")}
         value={date}
         min={shiftDay(today, -MAX_PAST_DAYS)}
         max={shiftDay(today, MAX_FUTURE_DAYS)}

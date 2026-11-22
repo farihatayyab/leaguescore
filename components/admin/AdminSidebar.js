@@ -15,6 +15,7 @@ const NAV = [
       { href: "/admin/news", text: "All news", icon: "news", on: (p) => p === "/admin/news" || /^\/admin\/news\/\d+\/edit/.test(p) },
       { href: "/admin/news/new", text: "Add news", icon: "plus", exact: true },
       { href: "/admin/categories", text: "Categories / Subnavbar", icon: "tag" },
+      { href: "/admin/tv-guide", text: "TV Guide", icon: "tv" },
     ],
   },
   {
@@ -63,6 +64,7 @@ export default function AdminSidebar({ admin }) {
           <div className="adm-nav-label">Website</div>
           <Link href="/news" target="_blank"><Icon name="link" /> View news page</Link>
           <Link href="/news/all" target="_blank"><Icon name="link" /> All news &amp; categories</Link>
+          <Link href="/tv-guide" target="_blank"><Icon name="link" /> View TV Guide</Link>
         </nav>
 
         <div className="adm-user">

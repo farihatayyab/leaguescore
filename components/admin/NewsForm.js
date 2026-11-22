@@ -84,7 +84,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
 
   async function save(e) {
     e.preventDefault();
-    if (!f.category_id) return toast("Category select karo.", "err");
+    if (!f.category_id) return toast("Please select a category.", "err");
     setBusy(true);
     try {
       const d = await api("/api/admin/articles", f.id ? "PUT" : "POST", f);
@@ -134,11 +134,11 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
     return (
       <div className="adm-done adm-panel">
         <div className="adm-done-ic"><Icon name="check" size={30} /></div>
-        <h2>{done.published ? "News publish ho gayi!" : "Draft save ho gaya"}</h2>
+        <h2>{done.published ? "News published!" : "Draft saved"}</h2>
         <p className="muted">
           {done.published
-            ? "Ye news ab apne alag page par aur category page par dikh rahi hai."
-            : "Draft website par nahi dikhta. Jab ready ho to edit karke Published kar do."}
+            ? "This article is now live on its own page and on its category page."
+            : "A draft is not shown on the website. When it is ready, edit it and set it to Published."}
         </p>
         <div className="adm-done-btns">
           {done.published && (
@@ -166,7 +166,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
             <div className="adm-field">
               <label htmlFor="t">Title</label>
               <input id="t" className="adm-in" type="text" value={f.title} maxLength={255} required
-                placeholder="News ka headline likho" onChange={(e) => set("title", e.target.value)} />
+                placeholder="Write the news headline" onChange={(e) => set("title", e.target.value)} />
             </div>
             <div className="adm-field">
               <label htmlFor="s">Short summary <em>(optional)</em></label>
@@ -188,7 +188,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
                 <button type="button" onClick={tools.box} title="Info box (Ctrl+Alt+B)">▣ Box</button>
               </div>
               <textarea id="b" ref={bodyRef} className="adm-in adm-body" value={f.body}
-                placeholder={"Poori news yahan likho. Paragraph ke beech me ek khali line chhodo.\nHTML bhi chalta hai: <h2>Heading</h2>, <div class=\"news-box\">Box</div>"}
+                placeholder={"Write the full article here. Leave a blank line between paragraphs.\nHTML also works: <h2>Heading</h2>, <div class=\"news-box\">Box</div>"}
                 onKeyDown={onBodyKey}
                 onChange={(e) => set("body", e.target.value)} />
               <small>{wordCount} words</small>
@@ -206,7 +206,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
               )}
               {previewHtml
                 ? <div className="nw-body" dangerouslySetInnerHTML={{ __html: previewHtml }} />
-                : <p className="muted">Preview yahan dikhega…</p>}
+                : <p className="muted">The preview will appear here…</p>}
             </div>
           </section>
         </div>
@@ -241,7 +241,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCategory(); } }} />
               <button type="button" className="adm-btn sm" disabled={addingCat || !newCat.trim()} onClick={addCategory}>Add</button>
             </div>
-            <small>Nayi category news site ke subnavbar me foran aa jati hai. <Link href="/admin/categories" className="adm-link">Manage</Link></small>
+            <small>A new category appears in the news sub-navbar immediately. <Link href="/admin/categories" className="adm-link">Manage</Link></small>
           </section>
 
           <section className="adm-panel adm-panel-b adm-fields">
@@ -262,7 +262,7 @@ export default function NewsForm({ cats: initialCats, article = null, defaultCat
                 <input type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])} />
               </label>
             )}
-            <input className="adm-in" type="text" value={f.image_url} placeholder="ya image URL paste karo"
+            <input className="adm-in" type="text" value={f.image_url} placeholder="or paste an image URL"
               onChange={(e) => set("image_url", e.target.value)} />
           </section>
 

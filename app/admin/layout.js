@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }) {
         <div className="adm-panel adm-panel-b">
           <h2>Admin access only</h2>
           <p className="muted" style={{ margin: "10px 0 18px" }}>
-            Pehle website par “Connect” se login karo. Aapki email .env.local ke ADMIN_EMAILS me honi chahiye.
+            Please log in with “Connect” on the website first. Your email must be listed in ADMIN_EMAILS in .env.local.
           </p>
           <Link href="/" className="adm-btn">← Back to website</Link>
         </div>

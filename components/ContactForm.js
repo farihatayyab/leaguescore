@@ -1,10 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useT } from "./LanguageProvider";
 
+// value English hi rehti hai (admin ko English category milti hai); sirf dikhane wala text translate hota hai
 const CATEGORIES = ["Suggestion", "Bug / something is broken", "Wrong score or data", "Other"];
 
 // kind = "contact" ya "feedback"
 export default function ContactForm({ kind = "contact" }) {
+  const t = useT();
   const [form, setForm] = useState({ name: "", email: "", subject: "", category: CATEGORIES[0], message: "", website: "" });
   const [state, setState] = useState({ busy: false, ok: "", err: "" });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -19,11 +22,11 @@ export default function ContactForm({ kind = "contact" }) {
         body: JSON.stringify({ ...form, kind }),
       });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) return setState({ busy: false, ok: "", err: d.error || "Something went wrong. Please try again." });
+      if (!res.ok) return setState({ busy: false, ok: "", err: d.error || t("err.generic") });
       setForm({ name: "", email: "", subject: "", category: CATEGORIES[0], message: "", website: "" });
-      setState({ busy: false, ok: d.message || "Thank you! Your message has been sent.", err: "" });
+      setState({ busy: false, ok: d.message || t("cf.thanks"), err: "" });
     } catch {
-      setState({ busy: false, ok: "", err: "Could not reach the server. Please try again." });
+      setState({ busy: false, ok: "", err: t("err.server") });
     }
   }
 
@@ -31,33 +34,33 @@ export default function ContactForm({ kind = "contact" }) {
     <form className="cf" onSubmit={submit}>
       <div className="row">
         <label>
-          Your name
+          {t("cf.name")}
           <input value={form.name} onChange={set("name")} maxLength={100} required autoComplete="name" />
         </label>
         <label>
-          Email {kind === "feedback" ? "(optional)" : ""}
+          {t("connect.email")} {kind === "feedback" ? t("cf.optional") : ""}
           <input type="email" value={form.email} onChange={set("email")} maxLength={190} required={kind === "contact"} autoComplete="email" />
         </label>
       </div>
 
       {kind === "contact" ? (
         <label>
-          Subject
+          {t("cf.subject")}
           <input value={form.subject} onChange={set("subject")} maxLength={150} required />
         </label>
       ) : (
         <label>
-          Type of feedback
+          {t("cf.type")}
           <select value={form.category} onChange={set("category")}>
-            {CATEGORIES.map((c) => (
-              <option key={c}>{c}</option>
+            {CATEGORIES.map((c, i) => (
+              <option key={c} value={c}>{t(`cf.cat${i}`)}</option>
             ))}
           </select>
         </label>
       )}
 
       <label>
-        Message
+        {t("cf.message")}
         <textarea value={form.message} onChange={set("message")} minLength={10} maxLength={4000} required />
       </label>
 
@@ -71,7 +74,7 @@ export default function ContactForm({ kind = "contact" }) {
       {state.err && <div className="cf-msg err" role="alert">{state.err}</div>}
 
       <button className="btn-grad inline" disabled={state.busy} style={{ justifySelf: "start" }}>
-        {state.busy ? "Sending…" : kind === "feedback" ? "Send feedback" : "Send message"}
+        {state.busy ? t("cf.sending") : kind === "feedback" ? t("cf.sendFeedback") : t("cf.sendMessage")}
       </button>
     </form>
   );

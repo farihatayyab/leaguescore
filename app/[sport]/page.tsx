@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getMatchesByDate } from "@/lib/data";
 import { SPORTS, isSport } from "@/lib/sports";
 import { resolveDate, todayKey } from "@/lib/format";
+import { getT } from "@/lib/i18n-server";
 import MatchesList from "@/components/MatchesList";
 import DateTabs from "@/components/DateTabs";
 import Sidebar from "@/components/Sidebar";
@@ -16,7 +17,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sport } = await params;
   const s = SPORTS.find((x) => x.key === sport);
-  return s ? { title: `${s.label} Live Scores, Fixtures & Results` } : {};
+  const { t } = await getT();
+  return s ? { title: t("page.title", { sport: t(`sport.${s.key}`) }) } : {};
 }
 
 export default async function SportPage({ params, searchParams }: Props) {
@@ -30,7 +32,8 @@ export default async function SportPage({ params, searchParams }: Props) {
   const today = todayKey();
   let date = resolveDate(typeof sp.date === "string" ? sp.date : "");
 
-  const label = SPORTS.find((x) => x.key === sport)!.label;
+  const { t } = await getT();
+  const label = t(`sport.${sport}`);
   // /api/v1/fixtures/ se us date ke matches (max 200 per request, server-side cache); fail ho to widget feed
   let { matches, days, truncated } = await getMatchesByDate(sport, date);
 
@@ -49,14 +52,14 @@ export default async function SportPage({ params, searchParams }: Props) {
     <>
       <div className="page-head">
         <div>
-          <p className="crumb">Home › {label}</p>
-          <h1>{label} Live Scores, Fixtures &amp; Results</h1>
+          <p className="crumb">{t("home")} › {label}</p>
+          <h1>{t("page.title", { sport: label })}</h1>
         </div>
         <div className="stats">
-          <div><b>{matches.length}</b><span>Matches</span></div>
-          <div className="s-live"><b>{liveCount}</b><span>Live</span></div>
-          <div><b>{upCount}</b><span>Scheduled</span></div>
-          <div><b>{doneCount}</b><span>Finished</span></div>
+          <div><b>{matches.length}</b><span>{t("page.matches")}</span></div>
+          <div className="s-live"><b>{liveCount}</b><span>{t("f.live")}</span></div>
+          <div><b>{upCount}</b><span>{t("f.scheduled")}</span></div>
+          <div><b>{doneCount}</b><span>{t("f.finished")}</span></div>
         </div>
       </div>
 
@@ -64,9 +67,7 @@ export default async function SportPage({ params, searchParams }: Props) {
         <div className="panel">
           <DateTabs sport={sport} date={date} today={today} count={matches.length} days={days} q={q} comp={comp} />
           {truncated && (
-            <p className="active-filter">
-              This date has a very large number of fixtures; the list may be incomplete.
-            </p>
+            <p className="active-filter">{t("page.truncated")}</p>
           )}
           <MatchesList
             key={`${sport}-${date}-${q}-${comp}`}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLive } from "@/lib/useLive";
 import { featuredRank } from "@/lib/competitions";
 import FilterTabs from "./FilterTabs";
+import { useT } from "./LanguageProvider";
 import Crest from "./Crest";
 import Flag from "./Flag";
 import { getMatchCountryInfo, matchesQuery } from "@/lib/countries";
@@ -29,23 +30,24 @@ interface Group {
 }
 
 const SECTIONS: [MatchState, string, string][] = [
-  ["live", "Live now", "sec-live"],
-  ["scheduled", "Scheduled", "sec-up"],
-  ["finished", "Finished", "sec-fin"],
-  ["other", "Postponed / other", "sec-fin"],
+  ["live", "l.liveNow", "sec-live"],
+  ["scheduled", "f.scheduled", "sec-up"],
+  ["finished", "f.finished", "sec-fin"],
+  ["other", "l.other", "sec-fin"],
 ];
 
 // poore group ka ek hi round ho to header mein dikhao ("Round 15")
-const roundOf = (g: Group) => {
+const roundOf = (g: Group, t: (k: string, v?: Record<string, unknown>) => string) => {
   const r = (g.items[0]?.round || "").trim();
   if (!r || !g.items.every((m) => m.round === r)) return "";
-  return /^\d+$/.test(r) ? `Round ${r}` : r; // "8" -> "Round 8", "Round 8" jaisa hai waisa
+  return /^\d+$/.test(r) ? t("l.round", { n: r }) : r; // "8" -> "Round 8", "Round 8" jaisa hai waisa
 };
 
 const FAV_KEY = "leaguescore:favs";
 const favId = (m: Match) => `${m.sport}:${m.slug}`;
 
 export default function MatchesList({ initial, sport, date, isToday, q = "", comp = "" }: Props) {
+  const t = useT();
   const all = useLive(initial, { sport, date, poll: isToday });
   const [status, setStatus] = useState<StatusFilter>("all");
   const [shown, setShown] = useState(15);
@@ -138,25 +140,25 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
 
       {(q || comp) && (
         <p className="active-filter">
-          Showing {q && <b>“{q}”</b>} {comp && <b>{matches[0]?.competition || comp}</b>}
-          <Link href={`/${sport}${isToday ? "" : `?date=${date}`}`}>Clear</Link>
+          {t("l.showing")} {q && <b>“{q}”</b>} {comp && <b>{matches[0]?.competition || comp}</b>}
+          <Link href={`/${sport}${isToday ? "" : `?date=${date}`}`}>{t("l.clear")}</Link>
         </p>
       )}
 
       {!sections.length && (
         <p className="empty">
           {status === "fav"
-            ? "Tap the ☆ next to a match to add it to your favorites."
+            ? t("l.favEmpty")
             : all.length === 0
-            ? "No matches found for this date."
-            : "No matches in this tab."}
+            ? t("l.noMatches")
+            : t("l.noTab")}
         </p>
       )}
 
       {sections.map((s) => (
         <section key={s.key}>
           <div className={`sec-head ${s.cls}`}>
-            <span>{s.title}</span>
+            <span>{t(s.title)}</span>
             <span className="cnt">{s.total}</span>
           </div>
 
@@ -171,9 +173,9 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
                 <span className="lh-name">
                   <b>{g.name}</b>
                   {g.label && g.label.toLowerCase() !== g.name.toLowerCase() && <span className="lh-country"> · {g.label}</span>}
-                  {roundOf(g) && <span className="lh-country"> {roundOf(g)}</span>}
+                  {roundOf(g, t) && <span className="lh-country"> {roundOf(g, t)}</span>}
                 </span>
-                {featuredRank(g.name) !== 999 && <span className="fav-flag">Top</span>}
+                {featuredRank(g.name) !== 999 && <span className="fav-flag">{t("l.top")}</span>}
               </div>
 
               {g.items.map((m) => {
@@ -189,7 +191,7 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
                   <div className="mrow" key={`${m.slug}-${m.id}`}>
                     <button
                       className={isFav ? "mstar on" : "mstar"}
-                      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                      aria-label={isFav ? t("l.removeFav") : t("l.addFav")}
                       aria-pressed={isFav}
                       onClick={() => toggleFav(m)}
                     >
@@ -198,9 +200,9 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
                     <Link href={`/${m.sport}/match/${m.slug}`} className="mlink">
                       <span className="tm">
                         {m.state === "live" ? (
-                          <b className="live-badge"><i />LIVE{m.minute ? ` ${m.minute}'` : ""}</b>
+                          <b className="live-badge"><i />{t("live")}{m.minute ? ` ${m.minute}'` : ""}</b>
                         ) : m.state === "finished" ? (
-                          <b>FT</b>
+                          <b>{t("ft")}</b>
                         ) : (
                           <span>{m.time}</span>
                         )}
@@ -211,7 +213,7 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
                         <Crest src={m.homeLogo} name={m.home} />
                       </span>
                       <span className={noScore ? "sc vs" : m.live ? "sc livec" : "sc"}>
-                        {noScore ? "vs" : `${m.hs ?? 0} - ${m.as ?? 0}`}
+                        {noScore ? t("vs") : `${m.hs ?? 0} - ${m.as ?? 0}`}
                       </span>
                       <span className="t">
                         <Crest src={m.awayLogo} name={m.away} />
@@ -228,7 +230,7 @@ export default function MatchesList({ initial, sport, date, isToday, q = "", com
 
       {hasMore && (
         <button className="more" onClick={() => setShown(shown + 15)}>
-          Show more competitions
+          {t("l.moreComps")}
         </button>
       )}
     </>

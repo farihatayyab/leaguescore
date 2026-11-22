@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getArticle, bumpViews, getCategories, getMostRead, timeAgo } from "@/lib/news";
 import { NewsSubNav, MostRead } from "@/components/NewsBlocks";
+import { getT } from "@/lib/i18n-server";
 import { renderNewsBody } from "@/lib/htmlText";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export default async function ArticlePage({ params }) {
   const a = await getArticle(slug);
   if (!a) notFound();
   await bumpViews(a.id);
+  const { t } = await getT();
   const [cats, mostRead] = await Promise.all([getCategories(), getMostRead(5)]);
   const bodyHtml = renderNewsBody(a.body); // sanitized: headings/boxes render hote hain, script/XSS nahi
 
@@ -26,7 +28,7 @@ export default async function ArticlePage({ params }) {
       <div className="nw-layout">
         <article className="nw-block nw-art">
           <p className="crumb">
-            <Link href="/news">News</Link>
+            <Link href="/news">{t("nav.news")}</Link>
             {a.cat_name && <> › <Link href={`/news/category/${a.cat_slug}`}>{a.cat_name}</Link></>}
           </p>
           <h1>{a.title}</h1>

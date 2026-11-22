@@ -1,12 +1,13 @@
 "use client";
 import type { StatusFilter } from "@/types/match";
+import { useT } from "./LanguageProvider";
 
 export const STATUS_TABS: [StatusFilter, string][] = [
-  ["all", "All"],
-  ["live", "Live"],
-  ["scheduled", "Scheduled"],
-  ["finished", "Finished"],
-  ["fav", "★ Favorites"],
+  ["all", "f.all"],
+  ["live", "f.live"],
+  ["scheduled", "f.scheduled"],
+  ["finished", "f.finished"],
+  ["fav", "f.fav"],
 ];
 
 interface Props {
@@ -17,8 +18,9 @@ interface Props {
 
 // Sirf UI: kaun sa tab active hai aur har tab mein kitne matches hain
 export default function FilterTabs({ value, counts, onChange }: Props) {
+  const t = useT();
   return (
-    <div className="filters" role="tablist" aria-label="Filter matches by status">
+    <div className="filters" role="tablist" aria-label={t("f.aria")}>
       {STATUS_TABS.map(([key, label]) => (
         <button
           key={key}
@@ -28,7 +30,7 @@ export default function FilterTabs({ value, counts, onChange }: Props) {
           onClick={() => onChange(key)}
         >
           {key === "live" && <i className="dot" />}
-          {label} <span>{counts[key]}</span>
+          {t(label)} <span>{counts[key]}</span>
         </button>
       ))}
     </div>

@@ -1,21 +1,23 @@
 import InfoPage from "@/components/InfoPage";
 import ContactForm from "@/components/ContactForm";
 import { SITE } from "@/lib/site";
+import { getT } from "@/lib/i18n-server";
 
 export const metadata = { title: "Contact", description: `Contact the ${SITE.name} team.` };
 
-export default function Contact() {
+export default async function Contact() {
+  const { t } = await getT();
   return (
-    <InfoPage title="Contact" subtitle="We usually reply within a few working days" current="/contact">
+    <InfoPage title={t("info.contact")} subtitle={t("ct.sub")} current="/contact">
       <p>
-        Have a question, a business enquiry or a problem with your account? Send us a message using the form below.
+        {t("ct.p1")}
         {SITE.email && (
           <>
-            {" "}You can also email us at <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+            {" "}{t("ct.email")} <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
           </>
         )}
       </p>
-      <p>For wrong scores, bugs or feature ideas, the Feedback page is the quickest way to reach us.</p>
+      <p>{t("ct.p2")}</p>
       <ContactForm kind="contact" />
     </InfoPage>
   );

@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { useLive } from "@/lib/useLive";
 import Crest from "./Crest";
+import { useT } from "./LanguageProvider";
 
 export default function Ticker({ initial }) {
+  const t = useT();
   const live = useLive(initial, { sport: "football", live: true })
     .filter((m) => m.live)
     .slice(0, 30);
@@ -15,7 +17,7 @@ export default function Ticker({ initial }) {
 
   return (
     <div className="ticker" aria-label="Live football scores">
-      <span className="ticker-live"><i /> LIVE</span>
+      <span className="ticker-live"><i /> {t("live")}</span>
       <div className="ticker-track" style={{ animationDuration: `${seconds}s` }}>
         {items.map((m, i) => (
           <Link href={`/football/match/${m.slug}`} className="ticker-item" key={i}>

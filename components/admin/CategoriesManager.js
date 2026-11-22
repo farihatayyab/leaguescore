@@ -41,7 +41,7 @@ export default function CategoriesManager({ cats, counts }) {
     }, "Category renamed.");
 
   const del = (c) => {
-    if (!confirm(`Delete "${c.name}"?\nIs ki news rahegi, bas category khatam ho jayegi.`)) return;
+    if (!confirm(`Delete "${c.name}"?\nThe articles will stay; only the category is removed.`)) return;
     run(() => api(`/api/admin/categories?id=${c.id}`, "DELETE"), "Category deleted.");
   };
 
@@ -58,14 +58,14 @@ export default function CategoriesManager({ cats, counts }) {
       <div className="adm-head">
         <div>
           <h1>Categories</h1>
-          <p>Jo naam yahan likhoge wahi news page ke sub navbar me aayega. 7 se zyada hon to “More” me chali jayengi.</p>
+          <p>The names you enter here appear in the news page sub-navbar. If there are more than 7, the rest go under “More”.</p>
         </div>
       </div>
 
       <section className="adm-panel adm-panel-b" style={{ marginBottom: 18 }}>
         <form onSubmit={add} className="adm-add">
           <input className="adm-in" type="text" value={name} maxLength={80} required
-            placeholder="Naya category naam, e.g. Premier League" onChange={(e) => setName(e.target.value)} />
+            placeholder="New category name, e.g. Premier League" onChange={(e) => setName(e.target.value)} />
           <button className="adm-btn" disabled={busy}><Icon name="plus" size={16} /> Add category</button>
         </form>
       </section>
@@ -97,7 +97,7 @@ export default function CategoriesManager({ cats, counts }) {
             </div>
           </div>
         ))}
-        {!cats.length && <p className="adm-empty">Abhi koi category nahi hai.</p>}
+        {!cats.length && <p className="adm-empty">No categories yet.</p>}
       </section>
       {toastNode}
     </>

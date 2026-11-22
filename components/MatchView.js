@@ -3,6 +3,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Crest from "./Crest";
 import { fmtFull, slugify } from "@/lib/format";
+import { useT } from "./LanguageProvider";
+
+// stat ka label translate karo; agar translation na ho to API ka original label dikhao
+const statLabel = (tx, label) => {
+  const k = `st.${label}`;
+  const v = tx(k);
+  return v === k ? label : v;
+};
 
 const cap = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
 const sideOf = (i) => (i.side === "away" ? "away" : "home");
@@ -56,11 +64,12 @@ function statRows(m) {
 
 // ---------- Green pitch panel ----------
 function Pitch({ m, rows }) {
+  const tx = useT();
   const poss = rows.find((r) => /possession/i.test(r.label));
   const hp = parseFloat(poss?.home) || 0;
   const ap = parseFloat(poss?.away) || 0;
   const tot = hp + ap || 1;
-  const big = m.live ? m.minute || "" : m.state === "finished" ? "FT" : m.time;
+  const big = m.live ? m.minute || "" : m.state === "finished" ? tx("ft") : m.time;
 
   return (
     <section className="pitch-card">
@@ -77,15 +86,11 @@ function Pitch({ m, rows }) {
           <span>{m.away}</span>
         </div>
         <div className="pitch-mid">
-          {m.live && <span className="live-badge big"><i />LIVE</span>}
+          {m.live && <span className="live-badge big"><i />{tx("live")}</span>}
           <div className="pitch-score">{m.hs ?? 0} – {m.as ?? 0}</div>
           {big !== "" && <div className="pitch-min">{big}</div>}
           <p>
-            {m.live
-              ? "This match is live — the score & events update in real time below. Animated pitch tracking isn't provided for this competition."
-              : m.state === "finished"
-              ? "This match has finished. Full events and stats are shown below."
-              : "This match hasn't started yet. Live events will appear here at kick-off."}
+            {m.live ? tx("m.liveText") : m.state === "finished" ? tx("m.finishedText") : tx("m.notStarted")}
           </p>
         </div>
       </div>
@@ -95,7 +100,7 @@ function Pitch({ m, rows }) {
           <i className="yc" />{cnt(m, "home", /yellow/)} <i className="rc" />{cnt(m, "home", /red/)}
         </span>
         <span className="pf-poss">
-          <small>POSSESSION</small>
+          <small>{tx("m.possession")}</small>
           <span className="pf-bar"><i style={{ width: `${(hp / tot) * 100}%` }} /><i className="b" style={{ width: `${(ap / tot) * 100}%` }} /></span>
         </span>
         <span className="pf-cards">
@@ -108,8 +113,9 @@ function Pitch({ m, rows }) {
 
 // ---------- Timeline / Commentary ----------
 function Timeline({ incidents }) {
+  const tx = useT();
   if (!incidents.length) {
-    return <p className="empty">The match timeline will appear here once there are events.</p>;
+    return <p className="empty">{tx("m.noTimeline")}</p>;
   }
   const list = [...incidents].sort((a, b) => (a.time ?? 0) - (b.time ?? 0));
   return (
@@ -143,8 +149,9 @@ function Timeline({ incidents }) {
 }
 
 function Commentary({ m }) {
+  const tx = useT();
   if (!m.incidents.length) {
-    return <p className="empty">Commentary will appear here once the match has events.</p>;
+    return <p className="empty">{tx("m.noCommentary")}</p>;
   }
   const list = [...m.incidents].sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
   return (
@@ -153,7 +160,7 @@ function Commentary({ m }) {
         <li key={n}>
           <em>{i.time}&apos;</em>
           <span className="cm-ic">{iconFor(i)}</span>
-          <b>{i.is_sub ? `Substitution: ${i.player_in || ""} for ${i.player_out || ""}` : i.player ? `${i.type} – ${i.player}` : i.type}</b>
+          <b>{i.is_sub ? tx("m.sub", { in: i.player_in || "", out: i.player_out || "" }) : i.player ? `${i.type} – ${i.player}` : i.type}</b>
           <span className="chip cm-team">{sideOf(i) === "home" ? m.home : m.away}</span>
         </li>
       ))}
@@ -163,6 +170,7 @@ function Commentary({ m }) {
 
 // ---------- Lineups ----------
 function Squad({ title, formation, xi = [], subs = [], sport }) {
+  const tx = useT();
   const pl = (name) =>
     sport === "football" ? (
       <Link href={`/${sport}/player/${slugify(name)}`} className="plink">{name}</Link>
@@ -185,7 +193,7 @@ function Squad({ title, formation, xi = [], subs = [], sport }) {
       </ul>
       {subs.length > 0 && (
         <>
-          <h5>Substitutes</h5>
+          <h5>{tx("m.subs")}</h5>
           <ul className="subs">
             {subs.map((p, i) => (
               <li key={i}>
@@ -202,12 +210,13 @@ function Squad({ title, formation, xi = [], subs = [], sport }) {
 }
 
 function LineupsBlock({ m, sport }) {
+  const tx = useT();
   if (!m.lineups) {
     return (
       <div className="ph">
         <div className="ph-ic">⚽</div>
-        <b>Lineups will appear here shortly</b>
-        <p className="muted">Team sheets for live matches refresh automatically as they are published.</p>
+        <b>{tx("m.lineupSoon")}</b>
+        <p className="muted">{tx("m.lineupSoonText")}</p>
         <div className="ph-teams">
           <span><Crest src={m.homeLogo} name={m.home} size={22} /> {m.home}</span>
           <span><Crest src={m.awayLogo} name={m.away} size={22} /> {m.away}</span>
@@ -218,7 +227,7 @@ function LineupsBlock({ m, sport }) {
   const l = m.lineups;
   return (
     <>
-      {l.confirmed === false && <span className="chip">Predicted</span>}
+      {l.confirmed === false && <span className="chip">{tx("m.predicted")}</span>}
       <div className="squads">
         <Squad sport={sport} title={m.home} formation={l.home_formation} xi={l.home_xi} subs={l.home_subs} />
         <Squad sport={sport} title={m.away} formation={l.away_formation} xi={l.away_xi} subs={l.away_subs} />
@@ -229,6 +238,7 @@ function LineupsBlock({ m, sport }) {
 
 // ---------- Stats (sidebar) ----------
 function Stats({ stats }) {
+  const tx = useT();
   return (
     <div className="stats-list">
       {stats.map((s, i) => {
@@ -239,7 +249,7 @@ function Stats({ stats }) {
           <div className="stat" key={i}>
             <div className="stat-top">
               <b>{s.home}</b>
-              <span>{s.label}</span>
+              <span>{statLabel(tx, s.label)}</span>
               <b>{s.away}</b>
             </div>
             <div className="stat-bar">
@@ -255,7 +265,8 @@ function Stats({ stats }) {
 
 // ---------- Standings / H2H / League / About ----------
 function StandingsTab({ tables, m, sport }) {
-  if (!tables?.length) return <p className="empty">Standings are not available for this competition.</p>;
+  const tx = useT();
+  if (!tables?.length) return <p className="empty">{tx("m.noStandings")}</p>;
   return tables.map((t, n) => (
     <div key={n} className="tbl-wrap">
       {t.title && <h4 className="tbl-title">{t.title}</h4>}
@@ -263,7 +274,7 @@ function StandingsTab({ tables, m, sport }) {
         <thead>
           <tr>
             <th>#</th>
-            <th className="c-name">Team</th>
+            <th className="c-name">{tx("tbl.team")}</th>
             {t.cols.filter((c) => c.key !== "pos").map((c) => <th key={c.key}>{c.label}</th>)}
           </tr>
         </thead>
@@ -292,15 +303,16 @@ function StandingsTab({ tables, m, sport }) {
 }
 
 function H2HTab({ h2h, m, sport }) {
+  const tx = useT();
   if (!h2h || !h2h.list.length) {
-    return <p className="empty big">No previous meetings between these teams.</p>;
+    return <p className="empty big">{tx("m.noH2h")}</p>;
   }
   return (
     <>
       <div className="h2h-sum">
-        <div><b>{h2h.homeWins}</b><span>{m.home} wins</span></div>
-        <div><b>{h2h.draws}</b><span>Draws</span></div>
-        <div><b>{h2h.awayWins}</b><span>{m.away} wins</span></div>
+        <div><b>{h2h.homeWins}</b><span>{tx("m.winsOf", { team: m.home })}</span></div>
+        <div><b>{h2h.draws}</b><span>{tx("m.draws")}</span></div>
+        <div><b>{h2h.awayWins}</b><span>{tx("m.winsOf", { team: m.away })}</span></div>
       </div>
       {h2h.list.map((x) => (
         <Link key={x.slug + x.id} href={`/${sport}/match/${x.slug}`} className="lg-row">
@@ -315,6 +327,7 @@ function H2HTab({ h2h, m, sport }) {
 }
 
 function LeagueMore({ extras, m, sport }) {
+  const tx = useT();
   if (!extras || (!extras.recent.length && !extras.upcoming.length)) return null;
   const Row = ({ x }) => (
     <Link href={`/${sport}/match/${x.slug}`} className="lg-row">
@@ -326,19 +339,19 @@ function LeagueMore({ extras, m, sport }) {
   );
   return (
     <section className="panel">
-      <div className="sec-head"><span>More in {m.competition}</span></div>
+      <div className="sec-head"><span>{tx("m.moreIn", { comp: m.competition })}</span></div>
       <div className="lg-cols">
         <div>
-          <h4 className="tbl-title" style={{ padding: "10px 16px 0" }}>Recent results</h4>
+          <h4 className="tbl-title" style={{ padding: "10px 16px 0" }}>{tx("m.recent")}</h4>
           {extras.recent.length
             ? extras.recent.map((x) => <Row key={x.slug + x.id} x={x} />)
-            : <p className="empty">No recent results.</p>}
+            : <p className="empty">{tx("m.noRecent")}</p>}
         </div>
         <div>
-          <h4 className="tbl-title" style={{ padding: "10px 16px 0" }}>Upcoming fixtures</h4>
+          <h4 className="tbl-title" style={{ padding: "10px 16px 0" }}>{tx("m.upFixtures")}</h4>
           {extras.upcoming.length
             ? extras.upcoming.map((x) => <Row key={x.slug + x.id} x={x} />)
-            : <p className="empty">No upcoming fixtures.</p>}
+            : <p className="empty">{tx("m.noUp")}</p>}
         </div>
       </div>
     </section>
@@ -346,34 +359,33 @@ function LeagueMore({ extras, m, sport }) {
 }
 
 function About({ m, extras }) {
+  const tx = useT();
   const hr = extras?.homeRow;
   const ar = extras?.awayRow;
   const h = extras?.h2h;
   return (
     <section className="panel pad">
-      <h3>About {m.home} vs {m.away}</h3>
-      <h4 style={{ marginTop: 12 }}>Match preview</h4>
+      <h3>{tx("m.aboutTitle", { home: m.home, away: m.away })}</h3>
+      <h4 style={{ marginTop: 12 }}>{tx("m.preview")}</h4>
       <p className="muted">
-        {m.home} {m.state === "scheduled" ? "face" : "are playing"} {m.away} in the {m.competition}.
-        {" "}Kick-off: {fmtFull(m.iso)}.
-        {m.live && ` The current score is ${m.hs ?? 0}-${m.as ?? 0}.`}
-        {m.state === "finished" && ` The match finished ${m.hs ?? 0}-${m.as ?? 0}.`}
+        {tx("m.previewText", { home: m.home, away: m.away, comp: m.competition, when: fmtFull(m.iso), verb: m.state === "scheduled" ? tx("m.faces") : tx("m.playing") })}
+        {m.live && ` ${tx("m.currentScore", { hs: m.hs ?? 0, as: m.as ?? 0 })}`}
+        {m.state === "finished" && ` ${tx("m.finalScore", { hs: m.hs ?? 0, as: m.as ?? 0 })}`}
       </p>
       {(hr || ar) && (
         <>
-          <h4 style={{ marginTop: 12 }}>Current league position</h4>
+          <h4 style={{ marginTop: 12 }}>{tx("m.leaguePos")}</h4>
           <p className="muted">
-            {hr && `${m.home} are #${hr.pos}${hr.pts != null ? ` with ${hr.pts} points` : ""}${hr.p != null ? ` from ${hr.p} matches` : ""}. `}
-            {ar && `${m.away} are #${ar.pos}${ar.pts != null ? ` with ${ar.pts} points` : ""}${ar.p != null ? ` from ${ar.p} matches` : ""}.`}
+            {hr && `${tx("m.posText", { team: m.home, pos: hr.pos })}${hr.pts != null ? ` ${tx("m.withPts", { n: hr.pts })}` : ""}${hr.p != null ? ` ${tx("m.fromMatches", { n: hr.p })}` : ""}. `}
+            {ar && `${tx("m.posText", { team: m.away, pos: ar.pos })}${ar.pts != null ? ` ${tx("m.withPts", { n: ar.pts })}` : ""}${ar.p != null ? ` ${tx("m.fromMatches", { n: ar.p })}` : ""}.`}
           </p>
         </>
       )}
       {h && h.list.length > 0 && (
         <>
-          <h4 style={{ marginTop: 12 }}>Head-to-head history</h4>
+          <h4 style={{ marginTop: 12 }}>{tx("m.h2hHistory")}</h4>
           <p className="muted">
-            In {h.list.length} previous {h.list.length === 1 ? "meeting" : "meetings"}: {m.home} won {h.homeWins},
-            {" "}{m.away} won {h.awayWins}, {h.draws} drawn.
+            {tx("m.h2hText", { n: h.list.length, home: m.home, hw: h.homeWins, away: m.away, aw: h.awayWins, d: h.draws })}
           </p>
         </>
       )}
@@ -383,6 +395,7 @@ function About({ m, extras }) {
 
 // ---------- Main ----------
 export default function MatchView({ initial, sport, slug, extras }) {
+  const tx = useT();
   const [m, setM] = useState(initial);
   const [tab, setTab] = useState("Overview");
 
@@ -407,7 +420,7 @@ export default function MatchView({ initial, sport, slug, extras }) {
   return (
     <>
       <p className="crumb">
-        <Link href={`/${sport}`}>{cap(sport)}</Link> › {m.competition} › {m.home} vs {m.away}
+        <Link href={`/${sport}`}>{tx(`sport.${sport}`)}</Link> › {m.competition} › {m.home} vs {m.away}
       </p>
 
       <section className="hero">
@@ -417,9 +430,9 @@ export default function MatchView({ initial, sport, slug, extras }) {
             <Link href={`/${sport}/competition/${m.compSlug}`}>{m.competition}</Link>
           </span>
           {m.live ? (
-            <span className="live-badge big"><i />LIVE{m.minute ? ` ${m.minute}'` : ""}</span>
+            <span className="live-badge big"><i />{tx("live")}{m.minute ? ` ${m.minute}'` : ""}</span>
           ) : (
-            <span className="status-pill">{m.state === "finished" ? "Full time" : m.statusText || "Upcoming"}</span>
+            <span className="status-pill">{m.state === "finished" ? tx("m.fullTime") : m.statusText || tx("m.upcoming")}</span>
           )}
         </div>
 
@@ -432,7 +445,7 @@ export default function MatchView({ initial, sport, slug, extras }) {
           <div className="hero-score">
             {scheduled ? (
               <>
-                <span className="vs-big">vs</span>
+                <span className="vs-big">{tx("vs")}</span>
                 <small>{m.time}</small>
               </>
             ) : (
@@ -453,9 +466,9 @@ export default function MatchView({ initial, sport, slug, extras }) {
       </section>
 
       <div className="tabs" role="tablist">
-        {tabs.map((t) => (
-          <button key={t} role="tab" aria-selected={t === tab} className={t === tab ? "tab on" : "tab"} onClick={() => setTab(t)}>
-            {t}
+        {tabs.map((k) => (
+          <button key={k} role="tab" aria-selected={k === tab} className={k === tab ? "tab on" : "tab"} onClick={() => setTab(k)}>
+            {tx(`m.${k.toLowerCase()}`)}
           </button>
         ))}
       </div>
@@ -466,19 +479,19 @@ export default function MatchView({ initial, sport, slug, extras }) {
             <>
               <Pitch m={m} rows={rows} />
               <section className="panel pad">
-                <h3>Match timeline</h3>
+                <h3>{tx("m.timeline")}</h3>
                 <Timeline incidents={m.incidents} />
               </section>
               <section className="panel pad">
-                <h3>Commentary</h3>
+                <h3>{tx("m.commentary")}</h3>
                 <Commentary m={m} />
               </section>
               <section className="panel pad">
-                <h3>Head to head</h3>
+                <h3>{tx("m.h2hTitle")}</h3>
                 <H2HTab h2h={extras?.h2h} m={m} sport={sport} />
               </section>
               <section className="panel pad">
-                <h3>Lineups</h3>
+                <h3>{tx("m.lineups")}</h3>
                 <LineupsBlock m={m} sport={sport} />
               </section>
               <LeagueMore extras={extras} m={m} sport={sport} />
@@ -487,25 +500,25 @@ export default function MatchView({ initial, sport, slug, extras }) {
           )}
           {tab === "Lineups" && (
             <section className="panel pad">
-              <h3>Lineups</h3>
+              <h3>{tx("m.lineups")}</h3>
               <LineupsBlock m={m} sport={sport} />
             </section>
           )}
           {tab === "H2H" && (
             <section className="panel pad">
-              <h3>Head to head</h3>
+              <h3>{tx("m.h2hTitle")}</h3>
               <H2HTab h2h={extras?.h2h} m={m} sport={sport} />
             </section>
           )}
           {tab === "Standings" && (
             <section className="panel pad">
-              <h3>{m.competition} standings</h3>
+              <h3>{tx("m.standingsOf", { comp: m.competition })}</h3>
               <StandingsTab tables={extras?.standings} m={m} sport={sport} />
             </section>
           )}
           {tab === "Commentary" && (
             <section className="panel pad">
-              <h3>Commentary</h3>
+              <h3>{tx("m.commentary")}</h3>
               <Commentary m={m} />
             </section>
           )}
@@ -513,7 +526,7 @@ export default function MatchView({ initial, sport, slug, extras }) {
 
         <aside className="mright">
           <section className="panel pad">
-            <h3>Stats</h3>
+            <h3>{tx("m.stats")}</h3>
             <div className="stat-teams">
               <span><Crest src={m.homeLogo} name={m.home} size={20} /> {m.home}</span>
               <span>{m.away} <Crest src={m.awayLogo} name={m.away} size={20} /></span>
@@ -522,15 +535,15 @@ export default function MatchView({ initial, sport, slug, extras }) {
           </section>
 
           <section className="panel pad">
-            <h3>About the Match</h3>
+            <h3>{tx("m.about")}</h3>
             <dl className="info">
-              <dt>Match</dt><dd>{m.home} vs {m.away}</dd>
-              <dt>Competition</dt>
+              <dt>{tx("m.match")}</dt><dd>{m.home} {tx("vs")} {m.away}</dd>
+              <dt>{tx("m.competition")}</dt>
               <dd><Link href={`/${sport}/competition/${m.compSlug}`} className="plink">{m.competition}</Link></dd>
-              {season && (<><dt>Season</dt><dd>{season}</dd></>)}
-              <dt>Kick-off (PKT)</dt><dd>{fmtFull(m.iso)}</dd>
-              <dt>Status</dt><dd>{m.live ? "Live" : m.statusText || cap(m.state)}</dd>
-              {m.htHome !== null && m.htAway !== null && (<><dt>Half-time</dt><dd>{m.htHome} - {m.htAway}</dd></>)}
+              {season && (<><dt>{tx("m.season")}</dt><dd>{season}</dd></>)}
+              <dt>{tx("m.kickoff")}</dt><dd>{fmtFull(m.iso)}</dd>
+              <dt>{tx("m.status")}</dt><dd>{m.live ? tx("f.live") : m.statusText || cap(m.state)}</dd>
+              {m.htHome !== null && m.htAway !== null && (<><dt>{tx("m.halftime")}</dt><dd>{m.htHome} - {m.htAway}</dd></>)}
             </dl>
           </section>
         </aside>

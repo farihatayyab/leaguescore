@@ -4,11 +4,15 @@ import { usePathname } from "next/navigation";
 import { SPORTS } from "@/lib/sports";
 import ConnectButton from "./ConnectButton";
 import ThemeToggle from "./ThemeToggle";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useT } from "./LanguageProvider";
 
 export default function Header() {
+  const t = useT();
   const path = usePathname() || "/";
   const first = path.split("/")[1];
   const isNews = first === "news";
+  const isTv = first === "tv-guide";
   const active = SPORTS.some((s) => s.key === first) ? first : "football";
 
   return (
@@ -22,32 +26,34 @@ export default function Header() {
           <span>League<b>Score</b></span>
         </Link>
 
-        <form className="search" action={isNews ? "/news" : `/${active}`} role="search">
+        <form className="search" action={isNews ? "/news" : isTv ? "/tv-guide" : `/${active}`} role="search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7" />
             <path d="M20 20l-3.5-3.5" />
           </svg>
           <input
             name="q"
-            placeholder={isNews ? "Search news" : "Search matches, competitions, countries, teams..."}
-            aria-label="Search"
+            placeholder={isNews ? t("search.news") : isTv ? t("search.tv") : t("search.matches")}
+            aria-label={t("search.aria")}
             maxLength={60}
           />
         </form>
 
         <div className="head-actions">
           <ThemeToggle />
+          <LanguageSwitcher />
           <ConnectButton />
         </div>
       </div>
 
-      <nav className="wrap sports" aria-label="Sports">
+      <nav className="wrap sports" aria-label={t("nav.sports")}>
         {SPORTS.map((s) => (
-          <Link key={s.key} href={`/${s.key}`} className={!isNews && s.key === active ? "sport active" : "sport"}>
-            {s.label}
+          <Link key={s.key} href={`/${s.key}`} className={!isNews && !isTv && s.key === active ? "sport active" : "sport"}>
+            {t(`sport.${s.key}`)}
           </Link>
         ))}
-        <Link href="/news" className={isNews ? "sport active" : "sport"}>News</Link>
+        <Link href="/news" className={isNews ? "sport active" : "sport"}>{t("nav.news")}</Link>
+        <Link href="/tv-guide" className={isTv ? "sport active" : "sport"}>{t("nav.tv")}</Link>
       </nav>
     </header>
   );

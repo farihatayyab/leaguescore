@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Crest from "./Crest";
 import { slugify } from "@/lib/format";
+import { getT } from "@/lib/i18n-server";
 
 // Standings / Top scorers dono ke liye
-export default function DataTable({ tables, sport, empty = "No data available for this competition right now.", linkPlayers = false }) {
+export default async function DataTable({ tables, sport, empty, linkPlayers = false }) {
+  const { t: tr } = await getT();
   if (!tables || !tables.length || !tables.some((t) => t.rows.length)) {
-    return <p className="empty">{empty}</p>;
+    return <p className="empty">{empty || tr("tbl.empty")}</p>;
   }
   return (
     <>
@@ -18,7 +20,7 @@ export default function DataTable({ tables, sport, empty = "No data available fo
                 {t.cols.filter((c) => c.key === "pos").map((c) => (
                   <th key={c.key} className="c-pos">{c.label}</th>
                 ))}
-                <th className="c-name">{linkPlayers ? "Player" : "Team"}</th>
+                <th className="c-name">{linkPlayers ? tr("tbl.player") : tr("tbl.team")}</th>
                 {t.cols.filter((c) => c.key !== "pos").map((c) => (
                   <th key={c.key}>{c.label}</th>
                 ))}

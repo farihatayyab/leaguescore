@@ -4,8 +4,10 @@ import { shiftDay, todayKey } from "@/lib/format";
 import { INFO_LINKS, SITE, SOCIALS } from "@/lib/site";
 import { TOP_COMPETITIONS, TOP_LEAGUES } from "@/lib/sidebarData";
 import BackToTop from "./BackToTop";
+import { getT } from "@/lib/i18n-server";
 
-export function SportScoreBadge({ className = "" }) {
+export async function SportScoreBadge({ className = "" }) {
+  const { t } = await getT();
   // SportScore API ki terms: visible dofollow link + anchor text "SportScore"
   return (
     <a
@@ -14,7 +16,7 @@ export function SportScoreBadge({ className = "" }) {
       title="Sports data by SportScore"
       className={`attr-badge ${className}`}
     >
-      Powered by SportScore
+      {t("foot.powered")}
     </a>
   );
 }
@@ -45,7 +47,7 @@ const ICONS = {
 
 // Har sport ke columns: Live Scores / kal ke results / kal ke fixtures + kuch badi competitions
 const EXTRA = {
-  football: [{ href: "/news", label: "Football News" }],
+  football: [{ href: "/news", tkey: "foot.footballNews" }],
   basketball: [
     { href: "/basketball/competition/nba", label: "NBA" },
     { href: "/basketball/competition/euroleague", label: "EuroLeague" },
@@ -58,7 +60,8 @@ const EXTRA = {
   tennis: [],
 };
 
-export default function Footer() {
+export default async function Footer() {
+  const { t } = await getT();
   const today = todayKey();
   const yesterday = shiftDay(today, -1);
   const tomorrow = shiftDay(today, 1);
@@ -68,21 +71,21 @@ export default function Footer() {
       <div className="wrap">
         <div className="foot-cols">
           {SPORTS.map((s) => (
-            <nav key={s.key} aria-label={s.label}>
-              <h4>{s.label}</h4>
+            <nav key={s.key} aria-label={t(`sport.${s.key}`)}>
+              <h4>{t(`sport.${s.key}`)}</h4>
               <ul>
-                <li><Link href={`/${s.key}`}>Live Scores</Link></li>
-                <li><Link href={`/${s.key}?date=${yesterday}`}>Yesterday&apos;s Results</Link></li>
-                <li><Link href={`/${s.key}?date=${tomorrow}`}>Tomorrow&apos;s Fixtures</Link></li>
+                <li><Link href={`/${s.key}`}>{t("foot.liveScores")}</Link></li>
+                <li><Link href={`/${s.key}?date=${yesterday}`}>{t("foot.yesterday")}</Link></li>
+                <li><Link href={`/${s.key}?date=${tomorrow}`}>{t("foot.tomorrow")}</Link></li>
                 {EXTRA[s.key].map((l) => (
-                  <li key={l.href}><Link href={l.href}>{l.label}</Link></li>
+                  <li key={l.href}><Link href={l.href}>{l.tkey ? t(l.tkey) : l.label}</Link></li>
                 ))}
               </ul>
             </nav>
           ))}
 
-          <nav aria-label="Top competitions">
-            <h4>Top Competitions</h4>
+          <nav aria-label={t("foot.topComps")}>
+            <h4>{t("foot.topComps")}</h4>
             <ul>
               {TOP_COMPETITIONS.map((c) => (
                 <li key={c.slug}><Link href={`/football/competition/${c.slug}`}>{c.label}</Link></li>
@@ -90,8 +93,8 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <nav aria-label="Top leagues">
-            <h4>Top Leagues</h4>
+          <nav aria-label={t("foot.topLeagues")}>
+            <h4>{t("foot.topLeagues")}</h4>
             <ul>
               {TOP_LEAGUES.map((c) => (
                 <li key={c.slug}><Link href={`/football/competition/${c.slug}`}>{c.label}</Link></li>
@@ -111,37 +114,34 @@ export default function Footer() {
               </svg>
               <span className="foot-brand">League<em>Score</em></span>
             </Link>
-            <p>
-              Real-time scores, fixtures, lineups and standings for football, basketball, cricket and tennis, plus the
-              latest sports news.
-            </p>
+            <p>{t("foot.about")}</p>
             <SportScoreBadge />
           </div>
 
-          <nav aria-label="Quick links">
-            <h4>Quick Links</h4>
+          <nav aria-label={t("foot.quick")}>
+            <h4>{t("foot.quick")}</h4>
             <ul className="two">
-              <li><Link href="/football">Live Scores</Link></li>
-              <li><Link href="/news">News</Link></li>
+              <li><Link href="/football">{t("foot.liveScores")}</Link></li>
+              <li><Link href="/news">{t("nav.news")}</Link></li>
               {SPORTS.map((s) => (
-                <li key={s.key}><Link href={`/${s.key}`}>{s.label}</Link></li>
+                <li key={s.key}><Link href={`/${s.key}`}>{t(`sport.${s.key}`)}</Link></li>
               ))}
-              <li><Link href="/news/all">All News</Link></li>
+              <li><Link href="/news/all">{t("foot.allNews")}</Link></li>
             </ul>
           </nav>
 
-          <nav aria-label="About">
-            <h4>About</h4>
+          <nav aria-label={t("foot.aboutCol")}>
+            <h4>{t("foot.aboutCol")}</h4>
             <ul>
               {INFO_LINKS.map((l) => (
-                <li key={l.href}><Link href={l.href}>{l.label}</Link></li>
+                <li key={l.href}><Link href={l.href}>{t(`info.${l.key}`)}</Link></li>
               ))}
             </ul>
           </nav>
 
           {SOCIALS.length > 0 && (
             <div>
-              <h4>Join Our Community</h4>
+              <h4>{t("foot.join")}</h4>
               <div className="socials">
                 {SOCIALS.map((s) => (
                   <a key={s.key} href={s.href} target="_blank" rel="noopener noreferrer me" aria-label={s.label} title={s.label}>
@@ -157,7 +157,7 @@ export default function Footer() {
 
         <div className="foot-line" />
         <p className="foot-copy">
-          © {new Date().getFullYear()} {SITE.name}. All rights reserved. Scores may be delayed by up to a minute.
+          © {new Date().getFullYear()} {SITE.name}. {t("foot.copy")}
         </p>
       </div>
       <BackToTop />

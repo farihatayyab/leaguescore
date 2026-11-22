@@ -2,10 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useT } from "./LanguageProvider";
 
 const MAX = 7; // itni categories seedhi dikhengi, baqi "More" me
 
 export default function NewsSubNav({ cats, active = "" }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const path = usePathname();
@@ -24,8 +26,8 @@ export default function NewsSubNav({ cats, active = "" }) {
   const extraActive = extra.some((c) => c.slug === active);
 
   return (
-    <nav className="nw-sub" aria-label="News categories">
-      <Link href="/news" className={!active ? "on" : ""}>All</Link>
+    <nav className="nw-sub" aria-label={t("n.categories")}>
+      <Link href="/news" className={!active ? "on" : ""}>{t("n.all")}</Link>
       {shown.map((c) => (
         <Link key={c.id} href={`/news/category/${c.slug}`} className={active === c.slug ? "on" : ""}>
           {c.name}
@@ -34,7 +36,7 @@ export default function NewsSubNav({ cats, active = "" }) {
       {extra.length > 0 && (
         <div className="nw-more" ref={ref}>
           <button type="button" className={extraActive || open ? "on" : ""} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-            More ▾
+            {t("n.more")} ▾
           </button>
           {open && (
             <div className="nw-menu">
