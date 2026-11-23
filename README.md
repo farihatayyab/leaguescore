@@ -74,3 +74,22 @@ Live scores website (Next.js + MySQL login). Data: **SportScore free API** (key 
   ```
 - Limitation: client-side check sirf casual hide/delete rokta hai; script ki apni copy edit karne wale ko nahi. Asli control server-side hai (key suspend/revoke, domain allow-list, logs).
 - Upstream: SportScore data ki terms ke mutabiq widget mein "Data by SportScore" link bhi hai; third-party ko data dene se pehle unki terms check karo.
+
+## Authentication, roles & Forgot Password
+- **Roles**: `users.role` (`admin` | `user`) database mein hai. Admin ki email ab `.env` mein nahi (`ADMIN_EMAILS` hata diya gaya).
+  Role har request par DB se check hota hai (`lib/auth.js`), isliye role badalte hi asar ho jata hai.
+- **Pehla admin banao**: pehle website par sign up karo, phir `npm run make-admin -- you@email.com admin`
+  (ya phpMyAdmin mein `UPDATE users SET role='admin' WHERE email='you@email.com'`). Sab admins: `npm run make-admin -- --list`
+- **Pages**: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/dashboard` (user), `/admin` (admin). Header ka "Connect" button `/login` kholta hai.
+- **CSRF**: `middleware.js` har POST/PUT/DELETE par Origin check karta hai (cross-site request 403), cookie `SameSite=Lax` + `HttpOnly`.
+- **Login ke baad redirect**: admin -> `/admin`, user -> `/dashboard`. `/admin` aur `/api/admin` par pehle `middleware.js`
+  (login session), phir server mein DB role check. Normal user ko `/admin` kholne par `/dashboard` par bhej diya jata hai, admin APIs 403 deti hain.
+- **Forgot Password**: Login modal -> "Forgot password?" -> `POST /api/auth/forgot-password` (hamesha same jawab, email registered ho ya na ho)
+  -> email mein `SITE_URL/reset-password?token=...` -> `/reset-password` page -> `POST /api/auth/reset-password`.
+  Token 32 random bytes hai, DB mein sirf SHA-256 hash, `RESET_TOKEN_TTL_MINUTES` (15-30, default 30) baad expire, sirf ek baar use hota hai,
+  naya token purane tokens ko khatam kar deta hai, aur password badalne par purane login sessions invalid ho jate hain.
+- **Password rules**: kam se kam 8 characters (max 72), ek letter aur ek number.
+- **Email (SMTP)**: `.env` mein `SMTP_HOST / SMTP_PORT / SMTP_SECURE / SMTP_USER / SMTP_PASSWORD / EMAIL_FROM` (Gmail: 2-Step ON + App Password).
+  `NEXT_PUBLIC_APP_URL` zaroor sahi rakho, reset link isi se banta hai. SMTP khali ho to dev mode mein reset link server console mein print hota hai.
+- Naya package: `nodemailer` -> `npm install` chalao.
+- Tests: `npm run test:auth` (DB/SMTP ke baghair, fake DB par poora flow check karta hai).

@@ -965,3 +965,325 @@ html[lang="hi"] body{font-family:"Noto Sans Devanagari","Segoe UI",system-ui,san
 @media (max-width:820px){
   [dir="rtl"] .tg-p{border-right:0;padding:8px 72px 8px 16px}
 }
+
+/* ---------- auth: forgot / reset password, user dashboard ---------- */
+.btn-connect.ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--line);box-shadow:none}
+.head-user{display:inline-flex;gap:8px;align-items:center}
+.auth-page{display:grid;place-items:center;padding:36px 0}
+.modal.static{box-shadow:none;width:min(460px,100%)}
+.auth-title{font-size:22px;margin:4px 0 0;letter-spacing:-.3px}
+.modal .link-btn{background:none;border:0;padding:0;color:var(--brand);font-weight:600;cursor:pointer;font-size:14px}
+.modal .row-end{display:flex;justify-content:flex-end;margin:-6px 0 14px}
+.user-dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.dash-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.dash-card h2{font-size:17px;margin:0 0 12px}
+.dash-card dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0}
+.dash-card dt{color:var(--muted)}
+.dash-card dd{margin:0;word-break:break-word}
+.dash-card ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.dash-card a{color:var(--brand);font-weight:600}
+.role-pill{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600}
+/* ---------- password eye toggle ---------- */
+.pw-wrap{position:relative;margin-top:6px}
+.modal .pw-wrap input:not([type=checkbox]){margin-top:0;padding-inline-end:46px}
+.pw-eye{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;display:grid;place-items:center;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:8px}
+.pw-eye:hover{color:var(--text)}
+.pw-eye:focus-visible{outline:2px solid var(--brand)}
+/* auth pages: poori screen, sirf form */
+.admin-main .auth-page{min-height:100vh;padding:24px 16px}
+/* =====================================================================
+   RESPONSIVE LAYER — poori site (public pages + admin + auth)
+   Breakpoints: 1100 (small laptop) · 960 (tablet) · 700 (large phone)
+                560 (phone) · 400 (small phone)
+   ===================================================================== */
+
+/* ---------- base safety ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:clip}
+img,svg,video,canvas,iframe{max-width:100%}
+table{max-width:100%}
+.main,.wrap>*{min-width:0}
+select,input,textarea,button{max-width:100%}
+/* mobile par input par zoom na ho (iOS 16px se kam par zoom karta hai) */
+@media (max-width:700px){
+  input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px}
+}
+/* touch devices par tap targets thode bade */
+@media (pointer:coarse){
+  .icon-btn{width:44px;height:44px}
+  .mstar{min-width:44px}
+  .sport{padding-block:14px}
+}
+
+/* ---------- footer: Explore strip (Football · Basketball · Cricket · Tennis · News · TV Guide) ---------- */
+.foot-explore{margin-bottom:34px;padding-bottom:30px;border-bottom:1px solid var(--f-line)}
+.foot-explore h4{margin-bottom:14px}
+.foot-explore ul{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.foot-explore li{min-width:0}
+.foot-explore a{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 14px;text-align:center;font-weight:600;font-size:15px;color:var(--f-text);background:rgba(255,255,255,.07);border:1px solid var(--f-line);border-radius:12px;transition:background .15s,color .15s,border-color .15s}
+.foot-explore a:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* ---------- 1100: chhota laptop ---------- */
+@media (max-width:1100px){
+  .layout{grid-template-columns:minmax(0,1fr) 280px}
+  .mgrid{grid-template-columns:minmax(0,1fr) 270px}
+  .team-grid{grid-template-columns:minmax(0,1fr) 280px}
+  .nw-layout{grid-template-columns:minmax(0,1fr) 270px}
+  .comp-note{display:none}
+  .mlink2{grid-template-columns:70px minmax(0,1fr) 62px minmax(0,1fr)}
+  .foot-cols{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tg-row{grid-template-columns:220px repeat(3,minmax(0,1fr))}
+  .adm-content{padding:24px 22px 48px}
+}
+
+/* ---------- 960: tablet ---------- */
+@media (max-width:960px){
+  .foot-explore ul{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .head-top{gap:12px}
+  .search{max-width:none}
+  .hero-main{gap:12px}
+  .score-big{font-size:46px}
+  .pl-hero-stats{flex-basis:100%}
+  .layout,.mgrid,.nw-layout,.team-grid{grid-template-columns:minmax(0,1fr)}
+  .nw-hero{grid-template-columns:1fr}
+  .nw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* sidebar content ke neeche aati hai, to uske cards 2 column me */
+  .side{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .side>.live-now,.side>.date-card{grid-column:1/-1}
+  .adm-stats{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+}
+
+/* ---------- 700: phone (landscape / large) ---------- */
+@media (max-width:700px){
+  body{font-size:14.5px}
+  .main{padding-top:14px;padding-bottom:28px}
+
+  /* header: row 1 = logo + actions, row 2 = search, row 3 = sports tabs */
+  .head-top{flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+  .brand{font-size:19px;margin-right:0}
+  .brand svg{width:28px;height:28px}
+  .head-actions{gap:8px}
+  .search{order:5;flex:1 1 100%}
+  .search input{padding:10px 0}
+  .btn-connect{padding:9px 14px;font-size:14px}
+  .head-user{gap:6px}
+  .head-user .btn-connect{max-width:110px;overflow:hidden;text-overflow:ellipsis}
+  .sports{gap:0;padding-inline:8px;scroll-snap-type:x proximity}
+  .sport{padding:12px 13px;font-size:14px;scroll-snap-align:start}
+
+  /* ticker */
+  .ticker{height:38px;font-size:13px}
+  .ticker-live{padding:0 10px;font-size:11px}
+  .ticker-track{gap:26px}
+
+  /* page head */
+  .page-head{gap:12px;margin-bottom:14px}
+  .page-head h1{font-size:21px}
+  .team-head{gap:12px}.team-head h1{font-size:21px}
+  .team-head .form-dots{display:none}
+  .stats{gap:8px}
+
+  /* filters / date bar */
+  .filters{padding:12px}
+  .datebar{padding:12px;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .datebar::-webkit-scrollbar{display:none}
+  .datebar>*{flex:none}
+  .dpick{margin-left:0!important;margin-inline-start:auto}
+
+  /* match rows */
+  .lh{padding:10px 12px}
+  .mlink{padding:11px 12px 11px 0}
+  .tm{font-size:12px}
+  .tname{font-size:13px}
+  .sec-head{padding:9px 12px}
+
+  /* match page */
+  .hero{padding:14px 12px 20px;border-radius:14px}
+  .hero-top{margin-bottom:16px;flex-wrap:wrap}
+  .vs-big{font-size:26px}
+  .hero-score small{font-size:13px}
+  .tabs{gap:20px;padding:0 14px}
+  .tab{padding:13px 0;font-size:14px}
+  .pitch{min-height:300px}
+  .pitch::after{width:110px;height:110px}
+  .pitch-mid{padding:28px 14px}
+  .pitch-min{font-size:42px}
+  .pitch-foot{grid-template-columns:70px 1fr 70px;gap:8px;padding:10px 12px}
+  .tl-row{grid-template-columns:1fr 58px 1fr}
+  .stat-top{grid-template-columns:48px 1fr 48px}
+  .info{gap:8px 10px}
+  .h2h-sum b{font-size:22px}
+  .lg-row{grid-template-columns:44px minmax(0,1fr) 54px minmax(0,1fr);padding:9px 12px;gap:6px;font-size:13px}
+  .split2>div{padding:10px 8px}
+  .squad-grid{grid-template-columns:1fr}
+  .squad-p,.h2h-row{padding:10px 12px}
+  .stat-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+  .stat-grid b{font-size:22px}
+  .rnd-grid{grid-template-columns:1fr}
+
+  /* tables */
+  .tbl{font-size:13px}
+  .tbl th,.tbl td{padding:8px 5px}
+  .tbl-team{gap:8px}
+
+  /* sidebar -> single column */
+  .side{grid-template-columns:1fr}
+
+  /* player / team */
+  .pl-hero{padding:16px 14px}
+  .pl-hero h1{font-size:22px}
+  .pl-hero-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pl-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kv{grid-template-columns:1fr}
+  .kv div{padding:10px 14px}
+  .pl-tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+  .pl-nav{margin-inline:-14px;padding-inline:14px}
+  .teams-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+
+  /* news */
+  .nw-sub{padding:0 4px;margin-bottom:14px}
+  .nw-sub a,.nw-more>button{padding:11px 10px;font-size:12px}
+  .nw-menu{max-width:calc(100vw - 28px)}
+  .nw-bh{padding:12px 14px 6px}
+  .nw-hero,.nw-hero2{padding:10px 14px 16px;gap:12px}
+  .nw-hero h2,.nw-hero2 h2{font-size:20px}
+  .nw-grid{grid-template-columns:1fr;padding:6px 14px 14px}
+  .nw-row{padding:12px 14px;gap:12px}
+  .nw-row h3{font-size:14px}
+  .nw-art{padding:16px 14px}
+  .nw-art h1{font-size:24px}
+  .nw-art .lead{font-size:15px}
+  .nw-art p,.nw-art .nw-body{font-size:15px}
+  .nw-art .nw-body h1{font-size:25px}
+  .nw-art .nw-body h2{font-size:21px}
+  .nw-art .nw-body h3{font-size:18px}
+  .nw-cats{padding:12px}
+
+  /* tv guide */
+  .tg-toolbar{margin:12px 0}
+  .tg-tabs{width:100%}
+  .tg-tabs a{flex:1;text-align:center;padding:8px 10px}
+  .tg-tools{width:100%}
+  .tvg-pick{width:100%}
+  .tvg-pick label{flex:1;min-width:140px}
+  .tvg-pick select{width:100%}
+  .tg-now-btn{flex:1;justify-content:center}
+  .tv-grid{grid-template-columns:1fr}
+  .tv-chead{gap:12px}.tv-chead h1{font-size:21px}
+  .tv-chead .tv-logo{width:52px;height:52px}
+  .tv-pager-main{gap:4px}
+
+  /* info / legal / auth */
+  .info-head{padding:20px 18px 14px}
+  .info-head h1{font-size:23px}
+  .info-body{padding-top:20px;padding-bottom:24px;font-size:14.5px}
+  .info-cards{grid-template-columns:1fr}
+  .auth-page{padding:20px 0}
+  .modal{padding:26px 18px 20px;border-radius:16px}
+  .user-dash{grid-template-columns:1fr}
+  .dash-card dl{grid-template-columns:1fr;gap:2px}
+  .dash-card dt{margin-top:8px;font-size:13px}
+
+  /* footer */
+  .foot{padding:30px 0 22px}
+  .foot h4{font-size:16px;margin-bottom:12px}
+  .foot-explore{margin-bottom:26px;padding-bottom:24px}
+  .foot-explore ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .foot-cols{gap:24px 18px}
+  .foot-line{margin:26px 0}
+  .foot-bottom{gap:26px 18px}
+  .foot p{max-width:none}
+  .foot-copy{text-align:start}
+  .totop{right:12px;bottom:12px}
+}
+
+/* ---------- 560: phone ---------- */
+@media (max-width:560px){
+  .foot-bottom{grid-template-columns:1fr}
+  .foot ul.two{grid-template-columns:1fr 1fr}
+  .stats>div{padding:7px 4px;min-width:0}
+  .stats b{font-size:17px}
+  .hero-team strong{font-size:13px}
+  .hero-team .crest,.hero-team .crest-fb{width:46px!important;height:46px!important}
+  .score-big{font-size:32px}
+  .pitch-top{gap:8px;padding:12px 8px;font-size:13px}
+  .pitch-top b{font-size:18px}
+  .poll-btns{gap:6px}
+  .ln-score{font-size:20px}
+  .page-head .tv-search{width:100%}
+  .adm-content{padding:72px 12px 36px}
+  .adm-head h1{font-size:21px}
+  .adm-head{gap:12px}
+  .adm-stats{grid-template-columns:1fr 1fr;gap:10px}
+  .adm-stat{padding:12px;gap:10px}
+  .adm-stat-ic{width:38px;height:38px}
+  .adm-stat b{font-size:21px}
+  .adm-toolbar{padding:12px}
+  .adm-toolbar .adm-in{width:100%}
+  .adm-search{min-width:0;flex-basis:100%}
+  .adm-panel-b{padding:14px}
+  .adm-li{padding:11px 14px}
+  .adm-cat{padding:12px 14px}
+  .adm-cat-info{min-width:0;flex-basis:100%}
+  .adm-news-cell{min-width:220px}
+  .adm-table th,.adm-table td{padding:10px 12px}
+  .adm-pager{flex-wrap:wrap;justify-content:center}
+  .adm-toast{left:12px;right:12px;bottom:12px;text-align:center}
+  .adm-done{margin:20px auto;padding:26px 18px}
+  .adm-add .adm-in{min-width:0;flex-basis:100%}
+  .ad-form{padding:14px}
+}
+
+/* ---------- 400: chhota phone (320–400px) ---------- */
+@media (max-width:400px){
+  .wrap{padding:0 12px}
+  .brand{font-size:17px;gap:7px}
+  .brand svg{width:26px;height:26px}
+  .head-actions{gap:6px}
+  .icon-btn{width:38px;height:38px}
+  .btn-connect{padding:8px 11px;font-size:13px}
+  .head-user .btn-connect.ghost{display:none}
+  .mlink,.mlink2,.mlink2.nocomp{grid-template-columns:44px minmax(0,1fr) 46px minmax(0,1fr);gap:5px}
+  .mstar{width:30px;min-width:30px}
+  .t{gap:5px;font-size:12.5px}
+  .t .crest,.t .crest-fb{width:18px!important;height:18px!important}
+  .sc{font-size:13px;padding:3px 0}
+  .tabs{gap:16px;padding:0 12px}
+  .tl-row{grid-template-columns:1fr 50px 1fr}
+  .pitch-foot{grid-template-columns:56px 1fr 56px}
+  .lg-row{grid-template-columns:38px minmax(0,1fr) 48px minmax(0,1fr);font-size:12.5px}
+  .pl-hero-stats b{font-size:20px}
+  .poll-teams{font-size:12px}
+  .foot-cols{grid-template-columns:1fr}
+  .foot-explore ul{gap:8px}
+  .foot-explore a{padding:9px 8px;font-size:14px;min-height:42px}
+  .tv-next li{grid-template-columns:58px 1fr}
+  .tg-p{padding-left:16px}
+  [dir="rtl"] .tg-p{padding-right:16px}
+  .tv-jump{flex-wrap:wrap;justify-content:center}
+  .adm-stats{grid-template-columns:1fr}
+}
+
+/* ---------- landscape phones: modal / hero chhote ---------- */
+@media (max-height:480px) and (orientation:landscape){
+  .overlay{align-items:start;overflow-y:auto}
+  .modal{max-height:none;margin:8px 0}
+  .pitch{min-height:240px}
+}
+
+/* ---------- RTL fixes for new rules ---------- */
+@media (max-width:700px){
+  [dir="rtl"] .dpick{margin-inline-start:auto}
+}
+
+/* ---------- print / reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .tv-card,.navbar{transition:none}
+}
+
+/* tv guide mobile: nowrap text grid ko chaura na kare */
+@media (max-width:820px){
+  .tg-row{grid-template-columns:minmax(0,1fr)}
+}
+
+.sport{flex:none}

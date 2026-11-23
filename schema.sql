@@ -2,12 +2,27 @@ CREATE DATABASE IF NOT EXISTS leaguescore;
 USE leaguescore;
 
 CREATE TABLE IF NOT EXISTS users (
+  id                  INT AUTO_INCREMENT PRIMARY KEY,
+  name                VARCHAR(100) NOT NULL,
+  email               VARCHAR(190) NOT NULL UNIQUE,
+  password            VARCHAR(255) NOT NULL,
+  role                ENUM('admin','user') NOT NULL DEFAULT 'user',
+  newsletter          TINYINT(1) NOT NULL DEFAULT 1,
+  password_changed_at TIMESTAMP NULL DEFAULT NULL,
+  created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Forgot Password: sirf token ka SHA-256 hash save hota hai, ek hi baar use hota hai, expire hota hai
+CREATE TABLE IF NOT EXISTS password_resets (
   id         INT AUTO_INCREMENT PRIMARY KEY,
-  name       VARCHAR(100) NOT NULL,
-  email      VARCHAR(190) NOT NULL UNIQUE,
-  password   VARCHAR(255) NOT NULL,
-  newsletter TINYINT(1) NOT NULL DEFAULT 1,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  user_id    INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used_at    DATETIME NULL DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_user (user_id),
+  KEY idx_expires (expires_at),
+  CONSTRAINT fk_pr_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS contact_messages (

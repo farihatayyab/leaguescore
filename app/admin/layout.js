@@ -1,30 +1,20 @@
-import Link from "next/link";
-import { getAdmin } from "@/lib/admin";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: { default: "Admin", template: "%s | Admin" } };
 
 export default async function AdminLayout({ children }) {
-  const admin = await getAdmin();
+  const user = await getCurrentUser();
 
-  if (!admin) {
-    return (
-      <div className="adm-denied">
-        <div className="adm-panel adm-panel-b">
-          <h2>Admin access only</h2>
-          <p className="muted" style={{ margin: "10px 0 18px" }}>
-            Please log in with “Connect” on the website first. Your email must be listed in ADMIN_EMAILS in .env.local.
-          </p>
-          <Link href="/" className="adm-btn">← Back to website</Link>
-        </div>
-      </div>
-    );
-  }
+  // Login nahi -> login; login hai magar role "admin" nahi -> apna User Dashboard
+  if (!user) redirect("/login");
+  if (user.role !== "admin") redirect("/dashboard");
 
   return (
     <div className="adm">
-      <AdminSidebar admin={admin} />
+      <AdminSidebar admin={user} />
       <div className="adm-content">{children}</div>
     </div>
   );

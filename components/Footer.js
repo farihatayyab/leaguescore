@@ -69,6 +69,17 @@ export default async function Footer() {
   return (
     <footer className="foot">
       <div className="wrap">
+        <nav className="foot-explore" aria-label={t("foot.explore")}>
+          <h4>{t("foot.explore")}</h4>
+          <ul>
+            {SPORTS.map((s) => (
+              <li key={s.key}><Link href={`/${s.key}`}>{t(`sport.${s.key}`)}</Link></li>
+            ))}
+            <li><Link href="/news">{t("nav.news")}</Link></li>
+            <li><Link href="/tv-guide">{t("nav.tv")}</Link></li>
+          </ul>
+        </nav>
+
         <div className="foot-cols">
           {SPORTS.map((s) => (
             <nav key={s.key} aria-label={t(`sport.${s.key}`)}>
@@ -123,6 +134,7 @@ export default async function Footer() {
             <ul className="two">
               <li><Link href="/football">{t("foot.liveScores")}</Link></li>
               <li><Link href="/news">{t("nav.news")}</Link></li>
+              <li><Link href="/tv-guide">{t("nav.tv")}</Link></li>
               {SPORTS.map((s) => (
                 <li key={s.key}><Link href={`/${s.key}`}>{t(`sport.${s.key}`)}</Link></li>
               ))}
